@@ -8,6 +8,9 @@
  *  4. Corridor Management Table (with status updates)
  *  5. Community Suggestions Review
  *  6. Data Export
+ *  7. Subsidy Statistics
+ *  8. Medical / Health Data
+ *  9. Passive User Management
  */
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
@@ -73,6 +76,19 @@ function StatusBadge({ status }) {
   );
 }
 
+/* Subsidy tier colors */
+const TIER_COLORS = {
+  flagship: '#d73027',
+  priority: '#fc8d59',
+  standard: '#1a9850',
+};
+
+const TIER_ICONS = {
+  flagship: '⭐',
+  priority: '🔶',
+  standard: '🟢',
+};
+
 /* ===================================================================
    Main dashboard
    =================================================================== */
@@ -82,6 +98,9 @@ export default function AdminDashboard() {
   const [corridors, setCorridors] = useState(null);
   const [zoneStats, setZoneStats] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [subsidyStats, setSubsidyStats] = useState(null);
+  const [medicalData, setMedicalData] = useState(null);
+  const [passiveUsers, setPassiveUsers] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -99,16 +118,22 @@ export default function AdminDashboard() {
     setLoading(true);
     setError(null);
     try {
-      const [sumRes, corRes, zoneRes, sugRes] = await Promise.all([
+      const [sumRes, corRes, zoneRes, sugRes, subRes, medRes, pasRes] = await Promise.all([
         adminApi.summary(),
         adminApi.corridors(),
         adminApi.zoneStats(),
         adminApi.allSuggestions(),
+        adminApi.subsidyStats().catch(() => ({ data: null })),
+        adminApi.medicalData().catch(() => ({ data: null })),
+        adminApi.passiveUsers().catch(() => ({ data: null })),
       ]);
       setSummary(sumRes.data);
       setCorridors(corRes.data);
       setZoneStats(zoneRes.data);
       setSuggestions(sugRes.data.suggestions || []);
+      setSubsidyStats(subRes.data);
+      setMedicalData(medRes.data);
+      setPassiveUsers(pasRes.data);
     } catch (err) {
       console.error('Admin fetch error:', err);
       setError('Failed to load dashboard data. Is the backend running?');
@@ -151,6 +176,23 @@ export default function AdminDashboard() {
       console.error('Status update failed:', err);
     } finally {
       setUpdatingStatus(false);
+    }
+  };
+
+  /* ---------- passive user removal ---------- */
+  const handleRemoveUser = async (userId) => {
+    try {
+      await adminApi.removePassiveUser(userId);
+      setPassiveUsers(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          users: prev.users.filter(u => u.id !== userId),
+          total: prev.total - 1,
+        };
+      });
+    } catch (err) {
+      console.error('User removal failed:', err);
     }
   };
 
@@ -203,7 +245,7 @@ export default function AdminDashboard() {
 
       {/* -------- Tab navigation -------- */}
       <nav className="admin-tabs">
-        {['overview', 'corridors', 'suggestions', 'export'].map(tab => (
+        {['overview', 'corridors', 'subsidies', 'medical', 'users', 'suggestions', 'export'].map(tab => (
           <button
             key={tab}
             className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -211,6 +253,9 @@ export default function AdminDashboard() {
           >
             {tab === 'overview' && '📊 Overview'}
             {tab === 'corridors' && '🛤️ Corridors'}
+            {tab === 'subsidies' && '💰 Subsidies'}
+            {tab === 'medical' && '🏥 Medical'}
+            {tab === 'users' && '👤 Users'}
             {tab === 'suggestions' && '💬 Suggestions'}
             {tab === 'export' && '📥 Export'}
           </button>
@@ -333,6 +378,7 @@ export default function AdminDashboard() {
                           <th>Name</th>
                           <th>Priority</th>
                           <th>Type</th>
+                          <th>Subsidy</th>
                           <th>Heat</th>
                           <th>NDVI</th>
                           <th>AQI</th>
@@ -360,6 +406,13 @@ export default function AdminDashboard() {
                               <td>
                                 <span className="type-tag">{p.corridor_type_icon} {formatType(p.corridor_type)}</span>
                               </td>
+                              <td>
+                                {p.subsidy_tier && (
+                                  <span className="subsidy-pill" style={{ background: TIER_COLORS[p.subsidy_tier] }}>
+                                    {TIER_ICONS[p.subsidy_tier]} {p.subsidy_tier}
+                                  </span>
+                                )}
+                              </td>
                               <td>{p.heat_norm?.toFixed(2) ?? '—'}</td>
                               <td>{p.ndvi_norm?.toFixed(2) ?? '—'}</td>
                               <td>{p.aqi_raw ? Math.round(p.aqi_raw) : '—'}</td>
@@ -385,6 +438,196 @@ export default function AdminDashboard() {
                       </tbody>
                     </table>
                   </div>
+                </section>
+              </div>
+            )}
+
+            {/* ============== SUBSIDIES TAB ============== */}
+            {activeTab === 'subsidies' && (
+              <div className="tab-panel">
+                {subsidyStats ? (
+                  <>
+                    <section className="kpi-grid">
+                      <KpiCard
+                        icon="🛤️" label="Total Corridors"
+                        value={subsidyStats.total_corridors}
+                        color="#5b8def"
+                      />
+                      <KpiCard
+                        icon="📢" label="Total Promo Budget"
+                        value={subsidyStats.total_promotional_budget_lakhs}
+                        unit=" ₹L" color="#fc8d59"
+                      />
+                    </section>
+
+                    <div className="subsidy-tier-grid">
+                      {Object.entries(subsidyStats.tiers || {}).map(([tier, data]) => (
+                        <section key={tier} className="admin-card subsidy-card" style={{ borderLeft: `4px solid ${TIER_COLORS[tier]}` }}>
+                          <div className="subsidy-header">
+                            <span className="subsidy-icon">{TIER_ICONS[tier]}</span>
+                            <h2>{data.label}</h2>
+                          </div>
+                          <p className="card-desc">{data.description}</p>
+                          <div className="subsidy-stats">
+                            <div className="sstat">
+                              <span className="sstat-label">Corridors</span>
+                              <span className="sstat-value">{data.count}</span>
+                            </div>
+                            <div className="sstat">
+                              <span className="sstat-label">Avg Priority</span>
+                              <span className="sstat-value">{data.avg_priority?.toFixed(3)}</span>
+                            </div>
+                            <div className="sstat">
+                              <span className="sstat-label">Subsidy %</span>
+                              <span className="sstat-value">{data.subsidy_pct}%</span>
+                            </div>
+                            <div className="sstat">
+                              <span className="sstat-label">Est. Cost / km</span>
+                              <span className="sstat-value">₹{data.est_cost_range_lakhs?.[0]}–{data.est_cost_range_lakhs?.[1]}L</span>
+                            </div>
+                            <div className="sstat">
+                              <span className="sstat-label">Total Est. Cost</span>
+                              <span className="sstat-value">₹{data.total_est_cost_lakhs?.[0]}–{data.total_est_cost_lakhs?.[1]}L</span>
+                            </div>
+                            <div className="sstat">
+                              <span className="sstat-label">Promo Budget</span>
+                              <span className="sstat-value">₹{data.promotional_budget_lakhs}L</span>
+                            </div>
+                          </div>
+                        </section>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="admin-loading">Subsidy data unavailable</div>
+                )}
+              </div>
+            )}
+
+            {/* ============== MEDICAL TAB ============== */}
+            {activeTab === 'medical' && (
+              <div className="tab-panel">
+                {medicalData ? (
+                  <>
+                    <section className="kpi-grid">
+                      <KpiCard
+                        icon="🤒" label="Heat Stress Cases"
+                        value={medicalData.totals?.total_heat_stress}
+                        color="#d73027"
+                      />
+                      <KpiCard
+                        icon="💧" label="Dehydration Cases"
+                        value={medicalData.totals?.total_dehydration}
+                        color="#fc8d59"
+                      />
+                      <KpiCard
+                        icon="🏥" label="Hospital Admissions"
+                        value={medicalData.totals?.total_admissions}
+                        color="#7b3294"
+                      />
+                      <KpiCard
+                        icon="⚠️" label="Heat Stroke Deaths"
+                        value={medicalData.totals?.total_deaths}
+                        color="#d73027"
+                      />
+                    </section>
+
+                    <section className="admin-card full-width">
+                      <h2>Heat-Related Health Data by Zone</h2>
+                      <p className="card-desc">
+                        {medicalData.period} — {medicalData.source}
+                      </p>
+                      <div className="table-wrap">
+                        <table className="admin-table medical-table">
+                          <thead>
+                            <tr>
+                              <th>Zone</th>
+                              <th>Heat Stress</th>
+                              <th>Dehydration</th>
+                              <th>Admissions</th>
+                              <th>Deaths</th>
+                              <th>Most Affected</th>
+                              <th>Centers</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(medicalData.zones || []).map((z, idx) => (
+                              <tr key={idx}>
+                                <td className="cell-name">{z.zone}</td>
+                                <td className="cell-num">{z.heat_stress_cases}</td>
+                                <td className="cell-num">{z.dehydration_cases}</td>
+                                <td className="cell-num">{z.hospital_admissions}</td>
+                                <td className="cell-num" style={{ color: z.heat_stroke_deaths > 0 ? '#d73027' : undefined }}>
+                                  {z.heat_stroke_deaths}
+                                </td>
+                                <td>{z.most_affected_area}</td>
+                                <td className="cell-num">{z.reporting_centers}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {medicalData.note && (
+                        <p className="card-note">⚠️ {medicalData.note}</p>
+                      )}
+                    </section>
+                  </>
+                ) : (
+                  <div className="admin-loading">Medical data unavailable</div>
+                )}
+              </div>
+            )}
+
+            {/* ============== USERS TAB ============== */}
+            {activeTab === 'users' && (
+              <div className="tab-panel">
+                <section className="admin-card full-width">
+                  <h2>Passive Community Users ({passiveUsers?.total ?? 0})</h2>
+                  <p className="card-desc">
+                    Users with no suggestion activity in 30+ days.
+                    Remove to clean up incentive eligibility lists.
+                  </p>
+                  {passiveUsers?.users?.length > 0 ? (
+                    <div className="table-wrap">
+                      <table className="admin-table users-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>IP Hash</th>
+                            <th>Last Active</th>
+                            <th>Suggestions</th>
+                            <th>Zone</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {passiveUsers.users.map(u => (
+                            <tr key={u.id}>
+                              <td className="cell-name">{u.id}</td>
+                              <td><code>{u.ip_hash}</code></td>
+                              <td>{u.last_active}</td>
+                              <td className="cell-num">{u.suggestions}</td>
+                              <td>{u.zone}</td>
+                              <td>
+                                <button
+                                  className="action-btn danger"
+                                  onClick={() => handleRemoveUser(u.id)}
+                                  title="Remove passive user"
+                                >
+                                  🗑️
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="empty-msg">No passive users found.</p>
+                  )}
+                  {passiveUsers?.note && (
+                    <p className="card-note">ℹ️ {passiveUsers.note}</p>
+                  )}
                 </section>
               </div>
             )}

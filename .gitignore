@@ -1,33 +1,16 @@
-# Dependencies
-node_modules/
-venv/
 .venv/
-
-# Python
+cache/
 __pycache__/
-*.pyc
-.pytest_cache/
-
-# Environment
 .env
 backend/.env
-
-# Cache
-cache/
-
-# IDE / Editor
+*.pyc
+.pytest_cache/
 .agents/
 .tests/
-.gemini/
-
-# Large data files
 *.tif
-
-# Backend (not pushing yet)
-backend/
-
-# Misc
-temp_clone/
-figures/
-map.png
-README_HF.md
+node_modules/
+venv/
+venv/
+dist/
+stats.json
+*.tif

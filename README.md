@@ -1,103 +1,146 @@
-# 🌳 VanSetu — Urban Green Corridor Planning Platform
+---
+title: Vansetu
+emoji: 🌳
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+---
 
-> **Hack4Impact 2026** — Data-driven urban greening for Delhi NCT
+# VanSetu Platform
 
-## 🧩 Problem Statement
+A full-stack web application for visualizing and analyzing VanSetu corridor planning data for Delhi NCT.
 
-Delhi is one of the most heat-stressed and polluted cities in the world. Urban Heat Islands (UHI), declining vegetation cover, and hazardous air quality disproportionately impact communities living along major road corridors. City planners lack an **accessible, data-driven tool** to identify where green interventions (tree planting, green buffers, pocket parks) would have the **highest impact**.
+## Architecture
 
-## 💡 Our Solution
+```
+├── backend/           # FastAPI REST API
+│   ├── app/
+│   │   ├── config.py      # Settings & configuration
+│   │   ├── dependencies.py # Dependency injection
+│   │   ├── main.py        # FastAPI application
+│   │   ├── routers/       # API endpoints
+│   │   │   ├── layers.py  # Layer metadata
+│   │   │   ├── tiles.py   # XYZ tile server
+│   │   │   ├── roads.py   # Road network & corridors
+│   │   │   └── stats.py   # Statistics endpoints
+│   │   └── services/      # Business logic
+│   │       ├── raster_service.py  # GeoTIFF processing
+│   │       ├── tile_service.py    # PNG tile generation
+│   │       └── road_service.py    # OSM data handling
+│   └── requirements.txt
+├── frontend/          # React + Vite application
+│   └── src/
+│       ├── api/       # API client
+│       ├── components/
+│       │   ├── Map.jsx     # Leaflet map
+│       │   └── Sidebar.jsx # Layer controls
+│       └── App.jsx
+└── Data files
+    ├── delhi_ndvi_10m.tif
+    └── delhi_lst_modis_daily_celsius.tif
+```
 
-**VanSetu** is an interactive geospatial platform that combines **satellite imagery, air quality data, and road network analysis** to automatically identify and rank the most critical corridors in Delhi for green interventions.
+## Quick Start
 
-### How It Works
+### 1. Backend Setup
 
-1. **Satellite Data Ingestion** — We process Sentinel-2 NDVI (vegetation index at 10m resolution) and MODIS Land Surface Temperature data to map heat and greenery across Delhi.
-2. **Multi-Exposure Scoring** — Each road segment is scored using a **Green Deficit Index (GDI)** that combines heat exposure, vegetation deficit, and air quality:
-   ```
-   GDI = 0.6 × Heat Stress + 0.4 × (1 − NDVI)
-   ```
-3. **Corridor Prioritization** — The top 15% highest-GDI road segments are surfaced as priority corridors, each tagged with a recommended intervention type (shade trees, pollution buffers, pocket greens, or mixed).
-4. **Community Input** — Citizens can submit and upvote corridor improvement suggestions, adding a participatory layer to planning.
-5. **Before / After Visualization** — Conceptual mockups show what proposed interventions would look like on each corridor.
+\`\`\`bash
+cd backend
 
-## ✨ Key Features
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or: venv\\Scripts\\activate  # Windows
 
-| Feature | Description |
-|---------|-------------|
-| 🗺️ **Interactive Map** | Leaflet-based map with toggleable NDVI, LST, GDI, road, and corridor layers |
-| 🔥 **Heat & Vegetation Overlays** | Real-time visualization of urban heat islands and green cover gaps |
-| 📊 **Statistics Dashboard** | Live stats panel showing layer metrics (min, max, mean, distribution) |
-| 📍 **Point Query** | Click anywhere on the map to get precise NDVI, LST, and GDI values |
-| 🌿 **Before / After Visuals** | Conceptual corridor improvement mockups based on intervention type |
-| 💬 **Community Suggestions** | Citizens can propose and upvote ideas for corridor improvements |
-| 🛡️ **Admin Dashboard** | Manage corridor statuses and review community suggestions |
+# Install dependencies
+pip install -r requirements.txt
 
-## 🛠️ Tech Stack
+# Run server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+\`\`\`
 
-| Layer | Technologies |
-|-------|-------------|
-| **Frontend** | React 19, Vite 7, Leaflet, React-Leaflet, Axios |
-| **Geospatial** | Rasterio, NumPy, GeoPandas, OSMnx, Shapely |
-| **Data Sources** | Sentinel-2 (ESA), MODIS (NASA), OpenStreetMap |
-| **Database** | MongoDB (community suggestions & admin) |
-| **Deployment** | Docker |
+### 2. Frontend Setup
 
-## 🚀 Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/beingaeditor/VanSetu.git
-cd VanSetu
-
-# Install frontend dependencies
+\`\`\`bash
 cd frontend
+
+# Install dependencies
 npm install
 
-# Start the development server
+# Run dev server
 npm run dev
-```
+\`\`\`
 
-Then open **http://localhost:5173** in your browser.
+### 3. Access the Application
 
-## 📁 Project Structure
+- **Frontend**: http://localhost:5173
+- **API Docs**: http://localhost:8000/docs
+- **API Base**: http://localhost:8000/api
 
-```
-VanSetu/
-├── frontend/              # React + Vite application
-│   └── src/
-│       ├── api/           # API client modules
-│       ├── components/
-│       │   ├── Map.jsx              # Interactive Leaflet map
-│       │   ├── Sidebar.jsx          # Layer controls & stats
-│       │   ├── InterventionPanel.jsx # Before/After corridor visuals
-│       │   └── CommunitySuggestions.jsx
-│       ├── pages/
-│       │   └── AdminDashboard.jsx   # Admin management panel
-│       └── App.jsx
-├── delhi_ndvi_10m.tif               # Sentinel-2 vegetation data
-├── delhi_lst_modis_daily_celsius.tif # MODIS temperature data
-├── engine.js                        # Google Earth Engine export script
-└── README.md
-```
+## API Endpoints
 
-## 📊 Data Layers
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| \`/api/layers\` | GET | List all available layers |
+| \`/api/tiles/{layer}/{z}/{x}/{y}.png\` | GET | Get map tile |
+| \`/api/roads\` | GET | Get road network GeoJSON |
+| \`/api/corridors\` | GET | Get corridor GeoJSON |
+| \`/api/stats\` | GET | Get all statistics |
+| \`/api/stats/{layer}\` | GET | Get layer statistics |
+| \`/api/point?lat=&lng=\` | GET | Query values at point |
+| \`/api/corridors/{id}/suggestions\` | GET | Get community suggestions for a corridor |
+| \`/api/corridors/{id}/suggestions\` | POST | Submit a suggestion for a corridor |
+| \`/api/suggestions/{id}/upvote\` | POST | Upvote a suggestion |
 
-| Layer | Description | Source | Resolution |
-|-------|-------------|--------|------------|
-| **NDVI** | Normalized Difference Vegetation Index | Sentinel-2 (ESA) | 10 m |
-| **LST** | Land Surface Temperature | MODIS (NASA) | 1 km (resampled) |
-| **GDI** | Green Deficit Index | Computed | 10 m |
-| **Roads** | Road network | OpenStreetMap | Vector |
-| **Corridors** | Priority green corridors | Top 15% GDI roads | Vector |
+## Features
 
-## 🌍 Impact
+- **Interactive Map**: Leaflet-based map with multiple data layers
+- **XYZ Tile Server**: Efficient raster tile serving for large datasets
+- **Layer Controls**: Toggle visibility of NDVI, LST, GDI, roads, and corridors
+- **Point Query**: Click anywhere to get layer values at that location
+- **Statistics Panel**: Real-time statistics for loaded data
+- **Community Suggestions**: Users can submit and upvote suggestions for corridors
 
-- **Identifies** the most heat-stressed, vegetation-deficient road corridors in Delhi
-- **Prioritizes** where limited greening budgets should be spent first
-- **Engages** communities in the planning process through participatory suggestions
-- **Visualizes** proposed interventions so stakeholders can understand the vision
+## Community Suggestions
 
-## 📜 License
+The platform includes a community participation feature that allows users to:
+- Submit suggestions for selected corridors (max 300 characters)
+- Upvote existing suggestions
+- View community sentiment
+
+**Rate Limits** (to prevent abuse):
+- Suggestions: 3 per IP per corridor per hour
+- Upvotes: 10 per IP per hour
+
+> **Note:** Community suggestions are advisory and do not affect corridor ranking.
+
+## Data Layers
+
+| Layer | Description | Source |
+|-------|-------------|--------|
+| NDVI | Vegetation Index | Sentinel-2 (10m resolution) |
+| LST | Land Surface Temperature | MODIS (resampled) |
+| GDI | Green Deficit Index | Computed: \`0.6×Heat + 0.4×(1-NDVI)\` |
+| Roads | Road Network | OpenStreetMap |
+| Corridors | Priority Corridors | Top 15% GDI on roads |
+
+## Tech Stack
+
+- **Backend**: FastAPI, Rasterio, NumPy, GeoPandas, OSMnx, MongoDB (PyMongo)
+- **Frontend**: React, Vite, Leaflet, Axios
+- **Data**: GeoTIFF rasters, OpenStreetMap vectors
+
+## Environment Variables
+
+For community suggestions to work, set up MongoDB:
+
+\`\`\`bash
+# MongoDB connection (defaults to localhost)
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB=urban_green_corridors
+\`\`\`
+
+## License
 
 MIT

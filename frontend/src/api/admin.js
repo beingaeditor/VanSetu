@@ -29,6 +29,21 @@ const adminApi = {
 
   /** Zone-level statistics */
   zoneStats: () => api.get('/admin/zone-stats'),
+
+  /** Subsidy allocation statistics */
+  subsidyStats: () => api.get('/admin/subsidy-stats'),
+
+  /** Simulated medical / heat-illness data */
+  medicalData: () => api.get('/admin/medical-data'),
+
+  /** Passive / inactive community users */
+  passiveUsers: () => api.get('/admin/passive-users'),
+
+  /** Remove a passive user */
+  removePassiveUser: (userId) => api.delete(`/admin/passive-users/${userId}`),
+
+  /** Signal coverage for 10-factor scoring */
+  signalCoverage: () => api.get('/admin/signal-coverage'),
 };
 
 export default adminApi;
