@@ -1,0 +1,201 @@
+/* VanSetu Dashboard — Botanical Cartography Theme */
+
+:root {
+  /* ── Core palette ── */
+  --primary-green: #2cb67d;
+  --primary-green-dim: rgba(44, 182, 125, 0.15);
+  --primary-green-glow: rgba(44, 182, 125, 0.35);
+  --warning-yellow: #f2c94c;
+  --alert-red: #e05252;
+  --info-blue: #5b8def;
+
+  /* ── Surfaces ── */
+  --dark-bg: #141422;
+  --card-bg: #1b1b32;
+  --card-bg-hover: #22223a;
+  --surface-elevated: #242440;
+
+  /* ── Text ── */
+  --text-primary: #ececf1;
+  --text-secondary: #8e8ea0;
+  --text-tertiary: #5a5a72;
+
+  /* ── Borders ── */
+  --border-color: #2d2d44;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+
+  /* ── Typography ── */
+  --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+
+  /* ── Radii ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 20px var(--primary-green-dim);
+
+  /* ── Transitions ── */
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Reset ── */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  background-color: var(--dark-bg);
+  color: var(--text-primary);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* Subtle grain texture overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* ── Focus-visible ── */
+:focus-visible {
+  outline: 2px solid var(--primary-green);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a55;
+}
+
+/* ── Tabular nums for data ── */
+.tabular-nums,
+.stat-value,
+.kpi-value,
+.dist-pct,
+.bar-pct,
+.bar-value,
+.point-coords {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Headings ── */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+/* ── Leaflet ── */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: var(--dark-bg);
+}
+
+.leaflet-control-zoom {
+  border: none !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: var(--card-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  transition: background-color 0.15s var(--ease-out);
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: var(--surface-elevated) !important;
+}
+
+.leaflet-control-zoom a:focus-visible {
+  outline: 2px solid var(--primary-green) !important;
+  outline-offset: 2px;
+}
+
+.leaflet-control-attribution {
+  background: rgba(20, 20, 34, 0.85) !important;
+  color: var(--text-tertiary) !important;
+  font-size: 10px;
+  backdrop-filter: blur(4px);
+}
+
+.leaflet-control-attribution a {
+  color: var(--primary-green) !important;
+}
+
+/* Custom popup */
+.leaflet-popup-content-wrapper {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.leaflet-popup-tip {
+  background: var(--card-bg);
+}
+
+.leaflet-popup-content {
+  margin: 12px;
+  font-family: var(--font-body);
+}

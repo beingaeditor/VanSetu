@@ -1,0 +1,607 @@
+/* ─── Map Container ───────────────────────────────────────── */
+
+.map-container {
+  position: relative;
+  flex: 1;
+  height: 100%;
+}
+
+/* ─── Legend ───────────────────────────────────────────────── */
+
+.map-legend {
+  position: absolute;
+  bottom: 30px;
+  right: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  z-index: 1000;
+  min-width: 120px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px);
+}
+
+.map-legend h4 {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.legend-gradient {
+  display: flex;
+  height: 10px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.legend-color {
+  flex: 1;
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.02em;
+}
+
+/* ─── Point Info Popup ─────────────────────────────────────── */
+
+.point-info {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  z-index: 1000;
+  min-width: 280px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+}
+
+.point-info h4 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.point-info .close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s var(--ease-out);
+}
+
+.point-info .close-btn:hover {
+  color: var(--text-primary);
+}
+
+.point-coords {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-bottom: 12px;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.point-values {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.value-row {
+  display: grid;
+  grid-template-columns: 70px 60px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.value-row .label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.value-row .value {
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.value-row .value.priority {
+  font-weight: 700;
+}
+
+.value-row .interpretation {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+/* ─── Loading Indicator ────────────────────────────────────── */
+
+.loading-indicator {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 8px 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-secondary);
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+  animation: loadPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes loadPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Legend subtitle */
+.legend-subtitle {
+  font-size: 10px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+/* Station info in Point Info popup */
+.station-info {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.station-info .label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.station-info .value {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.station-info .highlight {
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   CORRIDOR SUMMARY PANEL
+   Shows when a corridor is selected on the map
+   ============================================ */
+
+.corridor-summary {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  z-index: 1000;
+  min-width: 260px;
+  max-width: 320px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(12px);
+}
+
+.corridor-summary h4 {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.corridor-summary .close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: color 0.15s var(--ease-out);
+}
+
+.corridor-summary .close-btn:hover {
+  color: var(--text-primary);
+}
+
+/* Stats Grid */
+.corridor-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.corridor-stats .stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.corridor-stats .stat-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.corridor-stats .stat-value {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.corridor-stats .stat-value.priority {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.corridor-stats .priority-row {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Exposure Breakdown Section */
+.corridor-details h5 {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.exposure-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exposure-bar {
+  display: grid;
+  grid-template-columns: 60px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+}
+
+.exposure-bar .bar-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.exposure-bar .bar-track {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.exposure-bar .bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s var(--ease-out);
+}
+
+.exposure-bar .bar-fill.heat {
+  background: linear-gradient(90deg, #fc8d59, #d73027);
+}
+
+.exposure-bar .bar-fill.green {
+  background: linear-gradient(90deg, #238b45, #91cf60);
+}
+
+.exposure-bar .bar-fill.aqi {
+  background: linear-gradient(90deg, #7b3294, #c2a5cf);
+}
+
+.exposure-bar .bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Note at bottom */
+.corridor-note {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.corridor-note small {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* ============================================
+   LEAFLET POPUP OVERRIDES FOR CORRIDORS
+   ============================================ */
+
+.corridor-popup {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.corridor-popup hr {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.point-popup {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ============================================
+   CORRIDOR HOVER TOOLTIP STYLES
+   Rich tooltip shown on corridor hover
+   ============================================ */
+
+.corridor-tooltip-container {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.corridor-tooltip-container .leaflet-tooltip-content {
+  margin: 0;
+}
+
+.corridor-tooltip {
+  background: rgba(20, 20, 34, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  min-width: 200px;
+  font-family: var(--font-body);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Tooltip Header */
+.corridor-tooltip .tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.corridor-tooltip .tooltip-icon {
+  font-size: 16px;
+}
+
+.corridor-tooltip .tooltip-title {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.corridor-tooltip .tooltip-priority {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Stats Row */
+.corridor-tooltip .tooltip-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.corridor-tooltip .tooltip-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  padding: 6px 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+}
+
+.corridor-tooltip .tooltip-stat .stat-icon {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.corridor-tooltip .tooltip-stat .stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.corridor-tooltip .tooltip-stat .stat-label {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Dominant Exposure */
+.corridor-tooltip .tooltip-exposure {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.corridor-tooltip .tooltip-exposure .exposure-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.corridor-tooltip .tooltip-exposure .exposure-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* Exposure Bars in Tooltip */
+.corridor-tooltip .tooltip-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.corridor-tooltip .tooltip-bar {
+  display: grid;
+  grid-template-columns: 20px 1fr 32px;
+  align-items: center;
+  gap: 6px;
+}
+
+.corridor-tooltip .tooltip-bar .bar-icon {
+  font-size: 11px;
+  text-align: center;
+}
+
+.corridor-tooltip .tooltip-bar .bar-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.corridor-tooltip .tooltip-bar .bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.corridor-tooltip .tooltip-bar .bar-fill.heat {
+  background: linear-gradient(90deg, #fc8d59, #d73027);
+}
+
+.corridor-tooltip .tooltip-bar .bar-fill.green {
+  background: linear-gradient(90deg, #238b45, #91cf60);
+}
+
+.corridor-tooltip .tooltip-bar .bar-fill.aqi {
+  background: linear-gradient(90deg, #7b3294, #c2a5cf);
+}
+
+.corridor-tooltip .tooltip-bar .bar-pct {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Hint at bottom */
+.corridor-tooltip .tooltip-hint {
+  text-align: center;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   OSM Overlay Layer Styles
+   Translucent styling for roads, parks, residential
+   ============================================ */
+
+/* OSM Roads Overlay - gray/white tint for road network */
+.osm-roads-overlay {
+  filter: grayscale(100%) brightness(1.3) contrast(1.5);
+  mix-blend-mode: screen;
+}
+
+/* OSM Parks Overlay - strong green tint */
+.osm-parks-overlay {
+  filter: sepia(100%) hue-rotate(80deg) saturate(300%) brightness(0.7);
+  mix-blend-mode: screen;
+}
+
+/* OSM Residential Overlay - warm orange/tan tint */
+.osm-residential-overlay {
+  filter: sepia(100%) hue-rotate(-10deg) saturate(200%) brightness(0.8);
+  mix-blend-mode: screen;
+}
+
+/* Leaflet tile layer overrides for overlays - apply directly to tiles */
+.leaflet-tile-pane .leaflet-tile-container .osm-roads-overlay {
+  filter: grayscale(100%) brightness(1.5) contrast(1.5) !important;
+}
+
+.leaflet-tile-pane .leaflet-tile-container .osm-parks-overlay {
+  filter: sepia(100%) hue-rotate(80deg) saturate(400%) brightness(0.6) !important;
+}
+
+.leaflet-tile-pane .leaflet-tile-container .osm-residential-overlay {
+  filter: sepia(100%) hue-rotate(-15deg) saturate(250%) brightness(0.7) !important;
+}
+
+/* ─── Reduced Motion ──────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-indicator { animation: none; }
+  .exposure-bar .bar-fill { transition: none; }
+  .point-info .close-btn { transition: none; }
+  .corridor-summary .close-btn { transition: none; }
+}

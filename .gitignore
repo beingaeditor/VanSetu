@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Environment
+.env
+backend/.env
+
+# Cache
+cache/
+
+# IDE / Editor
+.agents/
+.tests/
+.gemini/
+
+# Large data files
+*.tif
+
+# Backend (not pushing yet)
+backend/
+
+# Misc
+temp_clone/
+figures/
+map.png
+README_HF.md

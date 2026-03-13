@@ -1,0 +1,36 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore node_modules
+node_modules/
+
+# Ignore local env files
+.env
+.env.local
+*.log
+
+# Ignore git
+.git/
+.gitignore
+.gitattributes
+
+# Ignore IDE
+.vscode/
+.idea/
+
+# Ignore test files
+tests/
+*.test.js
+*.spec.js
+
+# Ignore docs except README
+docs/
+*.md
+!README.md
+
+# Ignore dev configs
+.eslintrc*
+.prettierrc*
+eslint.config.js

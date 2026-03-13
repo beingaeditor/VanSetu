@@ -1,0 +1,272 @@
+/**
+ * InterventionPanel CSS — Sliding panel styling
+ */
+
+.intervention-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 380px;
+  height: 100vh;
+  background: linear-gradient(160deg, var(--card-bg) 0%, var(--dark-bg) 100%);
+  box-shadow: -4px 0 32px rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  padding: 24px;
+  overflow-y: auto;
+  animation: panelSlideIn 0.35s var(--ease-out);
+}
+
+@keyframes panelSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Close button */
+.panel-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+}
+
+.panel-close-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: scale(1.08);
+}
+
+/* Header */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panel-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  box-shadow: var(--shadow-md);
+}
+
+.panel-title h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.panel-subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+/* Corridor Upvote Section */
+.corridor-upvote-section {
+  margin-bottom: 20px;
+}
+
+.corridor-upvote-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  border: 2px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius-lg);
+  background: rgba(34, 197, 94, 0.08);
+  color: #22c55e;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease-out), border-color 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+}
+
+.corridor-upvote-btn:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.5);
+  transform: translateY(-1px);
+}
+
+.corridor-upvote-btn:disabled {
+  cursor: default;
+}
+
+.corridor-upvote-btn.upvoted {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+}
+
+.corridor-upvote-btn .upvote-icon {
+  font-size: 20px;
+}
+
+.corridor-upvote-btn .upvote-text {
+  flex: 1;
+  text-align: left;
+}
+
+.corridor-upvote-btn .upvote-count {
+  background: rgba(255, 255, 255, 0.12);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Corridor type section */
+.corridor-type-section {
+  margin-bottom: 28px;
+}
+
+.corridor-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 20px;
+  border: 2px solid;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Interventions section */
+.interventions-section {
+  margin-bottom: 28px;
+}
+
+.interventions-section h3,
+.rationale-section h3 {
+  font-family: var(--font-body);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 16px 0;
+  font-weight: 600;
+}
+
+.interventions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.intervention-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: background-color 0.15s var(--ease-out), transform 0.15s var(--ease-out);
+}
+
+.intervention-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateX(3px);
+}
+
+.intervention-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.intervention-text {
+  font-size: 15px;
+  color: #fff;
+  font-weight: 500;
+}
+
+/* Rationale section */
+.rationale-section {
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--primary-green-dim);
+}
+
+.rationale-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Footer */
+.panel-footer {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.footer-hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Scrollbar styling */
+.intervention-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.intervention-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.intervention-panel::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.intervention-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .intervention-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .intervention-panel { animation: none; }
+  .panel-close-btn { transition: none; }
+  .corridor-upvote-btn { transition: none; }
+  .intervention-item { transition: none; }
+}
