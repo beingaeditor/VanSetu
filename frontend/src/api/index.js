@@ -1,7 +1,7 @@
 /**
  * API Service — centralized API calls to the backend
- * 
- * Updated to support AQI integration for Multi-Exposure Priority scoring.
+ *
+ * Updated to support 6-factor Priority Index scoring.
  */
 import axios from 'axios';
 
@@ -36,8 +36,11 @@ export const statsApi = {
 export const roadsApi = {
   simple: () => api.get('/roads/simple'),
   withGdi: (includeAqi = true) => api.get('/roads', { params: { include_aqi: includeAqi } }),
-  corridors: (percentile = 85, includeAqi = true) => api.get('/corridors', { 
-    params: { percentile, include_aqi: includeAqi } 
+  corridors: (percentile = 85, includeAqi = true) => api.get('/corridors', {
+    params: { percentile, include_aqi: includeAqi }
+  }),
+  priorityRanking: (percentile = 85) => api.get('/corridors/priority-ranking', {
+    params: { percentile }
   }),
 };
 
@@ -137,6 +140,27 @@ export const suggestionsApi = {
    * @returns {Promise} Suggestion count and total upvotes
    */
   stats: (corridorId) => api.get(`/corridors/${corridorId}/suggestions/stats`),
+};
+
+/**
+ * Health Data endpoints
+ *
+ * Allows health departments to submit location-specific
+ * heat-related health data for corridor prioritization.
+ */
+export const healthApi = {
+  submit: (data) => api.post('/health-data', data),
+  byDistrict: (district) => api.get(`/health-data/${encodeURIComponent(district)}`),
+};
+
+/**
+ * Community / Environmental Data endpoints
+ *
+ * Secondary user data inputs from community activity providers
+ * and environmental risk authorities.
+ */
+export const communityDataApi = {
+  submit: (data) => api.post('/community-data', data),
 };
 
 /**

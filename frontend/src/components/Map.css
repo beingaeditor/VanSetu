@@ -605,3 +605,62 @@
   .point-info .close-btn { transition: none; }
   .corridor-summary .close-btn { transition: none; }
 }
+
+/* ─── District Indicator ─────────────────────────────────── */
+
+.district-indicator {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(20, 20, 34, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.district-clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
+}
+
+.district-clear-btn:hover {
+  background: var(--alert-red);
+  color: #fff;
+}
+
+/* ─── Corridor Tooltip Override ──────────────────────────── */
+.leaflet-tooltip.corridor-tooltip {
+  background: rgba(20, 20, 34, 0.94);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.leaflet-tooltip.corridor-tooltip::before {
+  border-top-color: rgba(20, 20, 34, 0.94);
+}

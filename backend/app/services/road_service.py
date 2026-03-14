@@ -3,8 +3,10 @@ Road Service — Fetch and process road network from OpenStreetMap.
 
 Handles OSM road fetching, GDI sampling, AQI assignment, and corridor detection.
 
-Updated to support Multi-Exposure Priority scoring:
-    Priority = 0.45 × Heat + 0.35 × Green Deficit + 0.20 × AQI
+Uses the 6-factor Priority Index:
+    Priority = (Heat × 0.25) + (Pollution × 0.20) + (Green Deficit × 0.20)
+             + (Pedestrian Density × 0.15) + (Health Risk Index × 0.12)
+             + (Vulnerable Pop. × 0.08)
 """
 import numpy as np
 import geopandas as gpd
@@ -166,40 +168,43 @@ class RoadService:
     ) -> gpd.GeoDataFrame:
         """
         Sample GDI values and assign AQI to road segments.
-        
-        This method computes the 10-factor Multi-Exposure Priority score:
-            Priority = weighted combination of heat, green deficit, AQI,
-                       pedestrian density, vulnerable population, park connectivity,
-                       community demand, cost-impact efficiency, health risk
-        
+
+        Computes the 6-factor Priority Index:
+            Priority = (Heat × 0.25) + (Pollution × 0.20) + (Green Deficit × 0.20)
+                     + (Pedestrian Density × 0.15) + (Health Risk Index × 0.12)
+                     + (Vulnerable Pop. × 0.08)
+
+        Health Risk Index and Vulnerable Population are derived from secondary
+        (ground-level) user inputs when available, falling back to proxies.
+
         Args:
             raster_service: RasterService instance with loaded raster data
             aqi_service: AQIService instance with AQI station data
-            
+
         Returns:
             GeoDataFrame with priority_score and all component signals
         """
         from app.services.aqi_service import normalize_aqi
         from app.services.scoring_service import (
-            compute_10factor_priority,
+            compute_priority,
             pedestrian_proxy,
             vulnerable_population_proxy,
         )
-        
+
         roads = self.sample_gdi_along_roads(raster_service)
-        
+
         if roads is None or len(roads) == 0:
             return gpd.GeoDataFrame(geometry=[], crs='EPSG:4326')
-        
+
         # Ensure AQI data is loaded
         aqi_service.fetch_stations()
-        
+
         # Get raster data for individual component sampling
         ndvi = raster_service.ndvi
         lst = raster_service.lst
         transform = raster_service.transform
         settings = raster_service.settings
-        
+
         # Initialize new columns
         heat_norms = []
         ndvi_norms = []
@@ -208,53 +213,50 @@ class RoadService:
         priority_scores = []
         pedestrian_scores = []
         vulnerable_scores = []
-        
+        signal_breakdowns = []
+        data_source_infos = []
+
         h, w = ndvi.shape if ndvi is not None else (0, 0)
-        
+
         from rasterio.transform import rowcol
-        
+
         for idx, row in roads.iterrows():
             geom = row.geometry
-            
+
             # Get centroid for AQI lookup
             centroid = geom.centroid
-            
+
             # Sample heat and NDVI at centroid
             heat_norm = None
             ndvi_norm = None
-            
+
             if ndvi is not None and lst is not None and transform is not None:
                 try:
                     r, c = rowcol(transform, centroid.x, centroid.y)
                     if 0 <= r < h and 0 <= c < w:
                         ndvi_val = ndvi[r, c]
                         lst_val = lst[r, c]
-                        
+
                         if np.isfinite(ndvi_val) and np.isfinite(lst_val):
-                            # Normalize values
                             ndvi_norm = (ndvi_val - settings.ndvi_min) / (settings.ndvi_max - settings.ndvi_min)
                             ndvi_norm = max(0.0, min(1.0, ndvi_norm))
-                            
+
                             heat_norm = (lst_val - settings.lst_min) / (settings.lst_max - settings.lst_min)
                             heat_norm = max(0.0, min(1.0, heat_norm))
                 except Exception:
                     pass
-            
+
             # Get AQI from nearest station
             aqi_info = aqi_service.get_aqi_at_point(centroid.x, centroid.y)
             aqi_raw = aqi_info.get("aqi_raw")
             aqi_norm = aqi_info.get("aqi_norm")
-            
+
             # Get highway type for proxy signals
             highway_type = row.get('highway') if 'highway' in roads.columns else None
-            
-            # Compute proxy signals
-            ped_score = pedestrian_proxy(highway_type)
-            vuln_score = vulnerable_population_proxy(centroid.x, centroid.y)
-            
-            # Compute 10-factor priority
+
+            # Compute 6-factor priority with signal breakdown
             if heat_norm is not None and ndvi_norm is not None:
-                priority = compute_10factor_priority(
+                result = compute_priority(
                     heat_norm=heat_norm,
                     ndvi_norm=ndvi_norm,
                     aqi_norm=aqi_norm,
@@ -262,9 +264,17 @@ class RoadService:
                     lon=centroid.x,
                     lat=centroid.y,
                 )
+                priority = result["score"]
+                signals = result["signals"]
+                data_sources = result["data_sources"]
             else:
-                priority = row.get('gdi_mean')  # Fallback to existing GDI
-            
+                priority = row.get('gdi_mean')
+                signals = {}
+                data_sources = {}
+
+            ped_score = pedestrian_proxy(highway_type)
+            vuln_score = vulnerable_population_proxy(centroid.x, centroid.y)
+
             heat_norms.append(heat_norm)
             ndvi_norms.append(ndvi_norm)
             aqi_raws.append(aqi_raw)
@@ -272,7 +282,9 @@ class RoadService:
             priority_scores.append(priority)
             pedestrian_scores.append(ped_score)
             vulnerable_scores.append(vuln_score)
-        
+            signal_breakdowns.append(signals)
+            data_source_infos.append(data_sources)
+
         # Add new columns
         roads = roads.copy()
         roads['heat_norm'] = heat_norms
@@ -282,9 +294,11 @@ class RoadService:
         roads['priority_score'] = priority_scores
         roads['pedestrian_score'] = pedestrian_scores
         roads['vulnerable_score'] = vulnerable_scores
-        
-        print(f"  ✅ Computed 10-factor priority for {len(roads)} road segments")
-        
+        roads['priority_signals'] = signal_breakdowns
+        roads['priority_data_sources'] = data_source_infos
+
+        print(f"  ✅ Computed 6-factor priority for {len(roads)} road segments")
+
         return roads
     
     def detect_corridors(
@@ -343,16 +357,32 @@ class RoadService:
         """Convert GeoDataFrame to GeoJSON dict."""
         if roads is None or len(roads) == 0:
             return {"type": "FeatureCollection", "features": []}
-        
-        # Handle non-JSON-serializable columns
+
+        # Handle non-JSON-serializable values (numpy float32, NaN, dicts with numpy)
         roads_copy = roads.copy()
         for col in roads_copy.columns:
-            if col != 'geometry':
-                roads_copy[col] = roads_copy[col].apply(
-                    lambda x: None if (isinstance(x, float) and np.isnan(x)) else x
-                )
-        
+            if col == 'geometry':
+                continue
+            roads_copy[col] = roads_copy[col].apply(self._make_serializable)
+
         return json.loads(roads_copy.to_json())
+
+    @staticmethod
+    def _make_serializable(x):
+        """Convert numpy types and NaN to JSON-safe Python types."""
+        if x is None:
+            return None
+        if isinstance(x, float) and np.isnan(x):
+            return None
+        if isinstance(x, (np.floating,)):
+            return float(x)
+        if isinstance(x, (np.integer,)):
+            return int(x)
+        if isinstance(x, dict):
+            return {k: RoadService._make_serializable(v) for k, v in x.items()}
+        if isinstance(x, list):
+            return [RoadService._make_serializable(v) for v in x]
+        return x
     
     def clear_cache(self):
         """Clear cached data."""

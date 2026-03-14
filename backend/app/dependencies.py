@@ -25,7 +25,12 @@ def init_services():
     
     # Initialize raster service and load data
     _raster_service = RasterService(settings)
-    _raster_service.load_data()
+    try:
+        _raster_service.load_data()
+        print("  ✅ Raster data loaded successfully")
+    except Exception as e:
+        print(f"  ⚠️  Raster data not available: {e}")
+        print("     Non-raster endpoints will still work.")
     
     # Initialize tile service
     _tile_service = TileService(_raster_service)

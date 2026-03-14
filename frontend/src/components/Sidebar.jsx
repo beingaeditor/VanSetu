@@ -1,11 +1,14 @@
 /**
  * Sidebar Component — Layer controls and statistics
  *
- * Updated to support AQI layer toggle and Multi-Exposure Priority scoring.
+ * Updated to support 6-factor Priority Index with real-time ranking.
  */
 import { useState, useEffect, memo } from 'react';
 import { Link } from 'react-router-dom';
 import { statsApi, layersApi, aqiApi } from '../api';
+import SecondaryUserInput from './SecondaryUserInput';
+import HealthDataInput from './HealthDataInput';
+import PriorityRanking from './PriorityRanking';
 import './Sidebar.css';
 
 /**
@@ -136,7 +139,7 @@ export default function Sidebar({ activeLayers, setActiveLayers }) {
                 color="#e05252"
               />
               <Toggle
-                label="Multi-Exposure Priority"
+                label="Priority Index (GDI)"
                 checked={activeLayers.gdi}
                 onChange={() => toggleLayer('gdi')}
                 color="#f2c94c"
@@ -222,6 +225,63 @@ export default function Sidebar({ activeLayers, setActiveLayers }) {
         ) : null}
       </div>
 
+      {/* Priority Ranking */}
+      <div className="sidebar-section">
+        <button
+          className="section-header"
+          onClick={() => toggleSection('priorityRanking')}
+          aria-expanded={expanded.priorityRanking || false}
+          aria-controls="section-priority-ranking"
+        >
+          <h3>Priority Ranking</h3>
+          <span className={`chevron ${expanded.priorityRanking ? 'open' : ''}`} aria-hidden="true">&#9660;</span>
+        </button>
+
+        {expanded.priorityRanking ? (
+          <div className="section-content" id="section-priority-ranking">
+            <PriorityRanking />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Community Input */}
+      <div className="sidebar-section">
+        <button
+          className="section-header"
+          onClick={() => toggleSection('communityInput')}
+          aria-expanded={expanded.communityInput || false}
+          aria-controls="section-community-input"
+        >
+          <h3>Community Input</h3>
+          <span className={`chevron ${expanded.communityInput ? 'open' : ''}`} aria-hidden="true">▼</span>
+        </button>
+
+        {expanded.communityInput ? (
+          <div className="section-content" id="section-community-input">
+            <SecondaryUserInput />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Health Data Input */}
+      <div className="sidebar-section">
+        <button
+          className="section-header"
+          onClick={() => toggleSection('healthData')}
+          aria-expanded={expanded.healthData || false}
+          aria-controls="section-health-data"
+        >
+          <h3>Health Data</h3>
+          <span className={`chevron ${expanded.healthData ? 'open' : ''}`} aria-hidden="true">▼</span>
+        </button>
+
+        {expanded.healthData ? (
+          <div className="section-content" id="section-health-data">
+            <HealthDataInput />
+          </div>
+        ) : null}
+      </div>
+
       {/* Info Section */}
       <div className="sidebar-section">
         <button
@@ -238,15 +298,16 @@ export default function Sidebar({ activeLayers, setActiveLayers }) {
           <div className="section-content" id="section-info">
             <div className="info-text">
               <p>
-                <strong>Multi-Exposure Priority Index</strong> combines heat stress,
-                vegetation deficit, and air pollution to identify areas most in need
-                of green infrastructure.
+                <strong>6-Factor Priority Index</strong> combines real-time
+                environmental data with ground-level secondary inputs to
+                identify areas most in need of green infrastructure.
               </p>
               <p className="formula">
-                Priority = 0.45 × Heat + 0.35 × (1 − NDVI) + 0.20 × AQI
+                Priority = (Heat &times; 0.25) + (Pollution &times; 0.20) + (Green Deficit &times; 0.20) + (Pedestrian &times; 0.15) + (Health Risk &times; 0.12) + (Vulnerable Pop. &times; 0.08)
               </p>
               <p className="formula-note">
-                When AQI data is unavailable, falls back to original GDI weights.
+                Health Risk Index and Vulnerable Population are derived from
+                secondary (ground-level) user inputs when available.
               </p>
               <p>
                 <strong>Click anywhere</strong> on the map to query layer

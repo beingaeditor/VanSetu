@@ -1,0 +1,65 @@
+/* CorridorDecisionPlanner — Dark theme */
+.corridor-decision {
+  padding: 8px 0;
+}
+
+.corridor-decision h2 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.planner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+}
+
+.planner-grid label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  align-self: end;
+}
+
+.planner-grid input,
+.planner-grid select {
+  width: 100%;
+  padding: 7px 10px;
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  transition: border-color 0.15s var(--ease-out);
+}
+
+.planner-grid input:focus,
+.planner-grid select:focus {
+  border-color: var(--primary-green);
+  outline: none;
+}
+
+.corridor-decision > button {
+  width: 100%;
+  padding: 9px 16px;
+  background: var(--primary-green);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+
+.corridor-decision > button:hover {
+  background: #25a06d;
+  box-shadow: var(--shadow-glow);
+}
+
+.corridor-decision > button:active {
+  transform: scale(0.98);
+}

@@ -1,0 +1,93 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "district": "Central" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.19, 28.62], [77.24, 28.62], [77.24, 28.67], [77.19, 28.67], [77.19, 28.62]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "New Delhi" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.17, 28.58], [77.23, 28.58], [77.23, 28.63], [77.17, 28.63], [77.17, 28.58]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "North" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.16, 28.67], [77.24, 28.67], [77.24, 28.74], [77.16, 28.74], [77.16, 28.67]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "North East" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.24, 28.67], [77.32, 28.67], [77.32, 28.73], [77.24, 28.73], [77.24, 28.67]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "North West" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.02, 28.67], [77.16, 28.67], [77.16, 28.78], [77.02, 28.78], [77.02, 28.67]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "East" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.26, 28.60], [77.33, 28.60], [77.33, 28.67], [77.26, 28.67], [77.26, 28.60]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "West" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.02, 28.60], [77.14, 28.60], [77.14, 28.67], [77.02, 28.67], [77.02, 28.60]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "South" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.14, 28.49], [77.25, 28.49], [77.25, 28.58], [77.14, 28.58], [77.14, 28.49]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "South East" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.25, 28.49], [77.34, 28.49], [77.34, 28.60], [77.25, 28.60], [77.25, 28.49]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "South West" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.02, 28.49], [77.14, 28.49], [77.14, 28.60], [77.02, 28.60], [77.02, 28.49]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "district": "Shahdara" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[77.26, 28.65], [77.30, 28.65], [77.30, 28.70], [77.26, 28.70], [77.26, 28.65]]]
+      }
+    }
+  ]
+}

@@ -8,7 +8,8 @@ from typing import Dict, Any, Optional
 
 from app.dependencies import get_raster_service, get_aqi_service
 from app.services.raster_service import RasterService
-from app.services.aqi_service import AQIService, compute_multi_exposure_priority
+from app.services.aqi_service import AQIService
+from app.services.scoring_service import compute_priority
 
 router = APIRouter()
 
@@ -133,8 +134,14 @@ async def get_point_values(
         ndvi_norm = max(0.0, min(1.0, ndvi_norm))
     
     if heat_norm is not None and ndvi_norm is not None:
-        priority_score = compute_multi_exposure_priority(heat_norm, ndvi_norm, aqi_norm)
-    
+        result = compute_priority(heat_norm, ndvi_norm, aqi_norm, lon=lng, lat=lat)
+        priority_score = result["score"]
+        priority_signals = result["signals"]
+        priority_sources = result["data_sources"]
+    else:
+        priority_signals = None
+        priority_sources = None
+
     return {
         "location": {"lat": lat, "lng": lng},
         "values": {
@@ -143,7 +150,9 @@ async def get_point_values(
             "gdi": gdi,
             "aqi_raw": aqi_raw,
             "aqi_norm": aqi_norm,
-            "priority_score": priority_score
+            "priority_score": priority_score,
+            "priority_signals": priority_signals,
+            "priority_data_sources": priority_sources,
         },
         "interpretation": {
             "vegetation": _interpret_ndvi(ndvi) if ndvi else None,
