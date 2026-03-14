@@ -8,9 +8,10 @@ backend/.env
 .agents/
 .tests/
 *.tif
+*.tiff
 node_modules/
-venv/
 venv/
 dist/
 stats.json
-*.tif
+.DS_Store
+backend/data/feedback/
