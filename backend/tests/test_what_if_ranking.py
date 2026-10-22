@@ -388,6 +388,13 @@ class TestWhatIfCorridorRankingEndpoint:
         )
         assert bad_sum.status_code == 422
 
+        # Reject unrecognized factor key
+        bad_key = client.post(
+            "/api/corridors/professional-rank",
+            json={"weights": {"unrecognized_factor": 1.0}},
+        )
+        assert bad_key.status_code == 422
+
     def test_ai_action_agent_endpoint(self):
         """14. Verify POST /api/corridors/ai-agent returns typed validated actions and grounded explanation."""
         rank_res = client.get("/api/corridors/rank?heat_weight=0.6&top=5").json()

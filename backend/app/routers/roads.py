@@ -365,6 +365,26 @@ async def explain_ranking_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+ALLOWED_WEIGHT_FACTORS = {
+    "lst", "ndvi_deficit", "aqi", "ped_exposure", "vulnerable_pop", "green_access",
+    "heat", "pollution", "green_deficit", "pedestrian", "health_risk",
+}
+
+WEIGHT_FACTOR_TO_SCORING_KEY = {
+    "lst": "heat",
+    "heat": "heat",
+    "ndvi_deficit": "green_deficit",
+    "green_deficit": "green_deficit",
+    "aqi": "pollution",
+    "pollution": "pollution",
+    "ped_exposure": "pedestrian",
+    "pedestrian": "pedestrian",
+    "green_access": "health_risk",
+    "health_risk": "health_risk",
+    "vulnerable_pop": "vulnerable_pop",
+}
+
+
 class ProfessionalRankRequest(BaseModel):
     weights: Dict[str, float] = Field(
         default_factory=lambda: dict(DEFAULT_WEIGHTS),
@@ -394,6 +414,11 @@ async def professional_rank_endpoint(
 
     cleaned_weights: Dict[str, float] = {}
     for k, v in raw_weights.items():
+        if k not in ALLOWED_WEIGHT_FACTORS:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unrecognized multi-criteria factor key '{k}'. Allowed keys are: lst, ndvi_deficit, aqi, ped_exposure, vulnerable_pop, green_access.",
+            )
         try:
             fv = float(v)
         except (ValueError, TypeError):
@@ -403,7 +428,8 @@ async def professional_rank_endpoint(
                 status_code=422,
                 detail=f"Invalid weight for '{k}' ({v}): weights must be finite and non-negative (>= 0).",
             )
-        cleaned_weights[k] = fv
+        scoring_key = WEIGHT_FACTOR_TO_SCORING_KEY[k]
+        cleaned_weights[scoring_key] = cleaned_weights.get(scoring_key, 0.0) + fv
 
     total_sum = sum(cleaned_weights.values())
     # Allow either normalized [0..1] summing to ~1.0 OR percentage [0..100] summing to ~100.0
