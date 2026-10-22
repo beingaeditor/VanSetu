@@ -1,63 +1,101 @@
 # Van Setu — Release & Deployment Audit (`docs/RELEASE_AND_DEPLOYMENT_AUDIT.md`)
 
 **Date:** 2026-10-22  
-**Repository:** `https://github.com/beingaeditor/VanSetu`  
+**Primary Repository:** `https://github.com/beingaeditor/VanSetu`  
+**Render Backend Mirror Repository:** `https://github.com/niharika19singh/van-setu`  
 **Local Workspace:** `/Users/user/Documents/TeleSol-mac-release/VanSetu`  
 **Current Branch:** `main`  
-**Current `HEAD` Commit:** `2949c4b3e6d0aff208b9d0e1b33aee44cd3df455` (`fix: Update API endpoints to support VITE_API_BASE_URL for production deployment`)
 
 ---
 
 ## 1. Source-of-Truth & Repository Reconciliation
 
 ### 1.1 Git Commit History & Authorship
-Inspection of `git log` in `beingaeditor/VanSetu` shows a single unified history shared between the two team contributor accounts (`niharika19singh` / `niharika1912singh@gmail.com` and `beingaeditor`):
+Inspection of `git log` in `beingaeditor/VanSetu` and `niharika19singh/van-setu` shows how the repositories relate:
 
-| Commit | Author | Subject |
-|---|---|---|
-| `2949c4b` | `beingaeditor <darkroyalemas.101@gmail.com>` | `fix: Update API endpoints to support VITE_API_BASE_URL for production deployment` |
-| `04e1090` | `beingaeditor <darkroyalemas.101@gmail.com>` | `Add Dockerfile for unified Hugging Face Spaces deployment` |
-| `f650b98` | `niharika <127630213+niharika19singh@users.noreply.github.com>` | `Merge branch 'main' of https://github.com/niharika19singh/Van-Setu` |
-| `6a0df61` | `niharika singh <nonisingh991@gmail.com>` | `Clean repo and track TIF with LFS` |
-| `7b7c2fa` | `niharika <127630213+niharika19singh@users.noreply.github.com>` | `Initial commit: Full project with GEE scripts, FastAPI backend, and React frontend` |
-
-**Conclusion:** `beingaeditor/VanSetu` already incorporates the full commit history from `niharika19singh/Van-Setu` (merged at `f650b98`) plus the unified deployment commits (`04e1090` and `2949c4b`). There is no lost work in a separate branch.
+| Commit | Repository | Author | Subject |
+|---|---|---|---|
+| `9433176` | `beingaeditor/VanSetu` | `niharika <127630213+niharika19singh@users.noreply.github.com>` | `chore: add vercel.json for van-setu-final deployment` |
+| `804de59` | `beingaeditor/VanSetu` | `niharika <127630213+niharika19singh@users.noreply.github.com>` | `feat: implement What-if Corridor Ranking, Baseline comparison, and Prune/Gemini integration` |
+| `046b09f` | `niharika19singh/van-setu` | `niharika <127630213+niharika19singh@users.noreply.github.com>` | `Remove buildCommand from vercel.json` |
+| `a6b6fd4` | `niharika19singh/van-setu` | `niharika singh <nonisingh991@gmail.com>` | `docs: add deep deployment guide for Render + Vercel` |
+| `48a69e6` | `niharika19singh/van-setu` | `niharika singh <nonisingh991@gmail.com>` | `feat: initial deployment-ready setup` |
 
 ---
 
 ## 2. Vercel Dashboard Projects Analysis
 
-The organizer/user screenshot of the Vercel dashboard shows four projects under `niharika19singh`'s Vercel account:
+The Vercel account (`nonisingh991-2947` / `niharika-singhs-projects-b3043020`) contains four projects:
 
-| Vercel Project | Live Domain | Last Commit Shown | Git Repository in Screenshot | Assessment |
-|---|---|---|---|---|
-| **`van-setu-final`** | `van-setu-final.vercel.app` | `fix: Update API endpoints to support...` (`2949c4b`, Mar 24 on `main`) | `niharika19singh/Van-Setu` (synced to `2949c4b`) | **Most up-to-date production deployment** matching `HEAD` (`2949c4b`) with `VITE_API_BASE_URL` support across all frontend API calls. |
-| **`van-setu-frontend`** | `van-setu-frontend.vercel.app` | `Initial commit: Full project with GEE...` (`7b7c2fa`, Mar 13 on `main`) | `niharika19singh/Van-Setu` | Older deployment from initial commit (`7b7c2fa`); lacks `VITE_API_BASE_URL` updates. |
-| **`vansetu-slk1`** | `vansetu-slk1.vercel.app` | `Initial commit: Full project with GEE...` (`7b7c2fa`, Mar 13 on `main`) | `niharika19singh/Van-Setu` | Duplicate early deployment from initial commit (`7b7c2fa`). |
-| **`vansetu`** | `vansetu.vercel.app` | `Initial commit: Full project with GEE...` (`7b7c2fa`, Mar 13 on `main`) | `niharika19singh/Van-Setu` | Earliest deployment from initial commit (`7b7c2fa`). |
+| Vercel Project | Live Domain | Status | Assessment |
+|---|---|---|---|
+| **`van-setu-final`** | `https://van-setu-final.vercel.app` | **Active Canonical Production Frontend** | Selected as the sole target frontend project. Proxies `/api/:path*` to `https://van-setu-backend.onrender.com/api/:path*`. |
+| **`van-setu-frontend`** | `van-setu-frontend.vercel.app` | Legacy (Untouched) | Older deployment from initial commit; left untouched. |
+| **`vansetu-slk1`** | `vansetu-slk1.vercel.app` | Legacy (Untouched) | Duplicate early deployment; left untouched. |
+| **`vansetu`** | `vansetu.vercel.app` | Legacy (Untouched) | Earliest deployment; left untouched. |
 
-### Canonical Target Recommendation
-- **Primary Vercel Project:** **`van-setu-final`** (`https://van-setu-final.vercel.app`) is the canonical frontend deployment because it is the only Vercel project deployed from commit `2949c4b` (`fix: Update API endpoints to support VITE_API_BASE_URL for production deployment`), which added `import.meta.env.VITE_API_BASE_URL` support across `Map.jsx`, `Sidebar.jsx`, `PriorityRanking.jsx`, `InterventionPanel.jsx`, `DataCards.jsx`, and `AnalyticsPage.jsx`.
-- **Root Directory & `vercel.json`:** Configured via root `vercel.json` (`installCommand: "npm install --prefix frontend"`, `buildCommand: "npm run build --prefix frontend"`, `outputDirectory: "frontend/dist"`, SPA rewrites to `/index.html`).
-- **Latest Production Deployment Verified:** `https://van-setu-final.vercel.app` (aliased from `https://van-setu-final-riddbrhsn-niharika-singhs-projects-b3043020.vercel.app`).
+### `vercel.json` Configuration (`van-setu-final`)
+Because `frontend/.env.production` sets `VITE_API_URL=/api`, `vercel.json` is configured with both the monorepo build commands (`frontend/`) and the `/api/:path*` proxy rewrite to the live Render backend:
+```json
+{
+  "installCommand": "npm install --prefix frontend",
+  "buildCommand": "npm run build --prefix frontend",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://van-setu-backend.onrender.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
 
 ---
 
-## 3. Backend Deployment Architecture
+## 3. Production Backend Verification & Reconciliation
 
-1. **Production Backend Host (`frontend/.env.production`):**
-   - `frontend/.env.production` sets:
+### 3.1 Hugging Face Space Check (`https://noni1991-vansetu.hf.space`)
+- Direct HTTP checks to `https://noni1991-vansetu.hf.space/health` and `https://noni1991-vansetu.hf.space/` return **`HTTP 404 Not Found`** (Hugging Face error page: *"Sorry, we can't find the page you are looking for"*).
+- That Hugging Face Space was only referenced in an older commit and is not a live backend service.
+
+### 3.2 Live Render Production Backend (`https://van-setu-backend.onrender.com`)
+- Inspection via the authenticated Render CLI (`render services list -o json`) confirmed the active production backend:
+  - **Service Name:** `van-setu-backend`
+  - **Service ID:** `srv-d6qfip15pdvs73b9c690`
+  - **Live URL:** `https://van-setu-backend.onrender.com`
+  - **Region:** Singapore (`singapore`)
+  - **Root Directory:** `backend`
+  - **Connected GitHub Repository:** `https://github.com/niharika19singh/van-setu` (`branch: main`, `autoDeploy: yes`)
+  - **Start Command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+  - **Health Check Path:** `/health` (`{"status":"healthy","raster_loaded":true}`)
+- Note on Render Free Tier Memory Limits: `niharika19singh/van-setu` uses the lightweight `(57, 79)` Delhi NDVI GeoTIFF (`oid sha256:87599e2bdfd4ad9b2b411b540fd8d4643a40648bc85f3a6bbb42d2a7d5d93d07`, `18 KB`) alongside `delhi_lst_modis_daily_celsius.tif` (`(57, 79)`, `20 KB`) and `delhi_roads_cached.geojson` (`44` Delhi corridors) so the backend starts in `<1s` well within Render's 512 MB RAM ceiling.
+
+---
+
+## 4. Prune + Gemini Configuration (`PRUNE_API_KEY`)
+
+- **Configured Prune Account:** `niharika1912singh@gmail.com` (Google Gemini provider already configured in Prune).
+- **Base URL:** `https://api.withprune.com/v1` (`POST /chat/completions`)
+- **Backend Service:** `backend/app/services/prune_service.py` -> `POST /api/corridors/explain-ranking`
+- **Where to Set `PRUNE_API_KEY`:**
+  1. **Local Development:** Create `backend/.env` (gitignored) and add:
      ```env
-     VITE_API_BASE_URL=https://noni1991-vansetu.hf.space
+     PRUNE_API_KEY=<your_prune_api_key>
+     PRUNE_BASE_URL=https://api.withprune.com/v1
+     PRUNE_MODEL=gemini-2.0-flash
      ```
-   - Commit `04e1090` added a root `Dockerfile` designed for Hugging Face Spaces (port `7860`) that builds the frontend into `backend/static` and runs `uvicorn app.main:app --host 0.0.0.0 --port 7860`.
-2. **Dockerfile Path Fix Required & Applied:**
-   - Commit `6a0df61` moved `delhi_ndvi_10m.tif` and `delhi_lst_modis_daily_celsius.tif` into `backend/data/`, whereas `Dockerfile` lines 51–52 still copied `delhi_ndvi_10m.tif* ./` from the repository root.
-   - Updating `Dockerfile` so `backend/data/` (including the GeoTIFF rasters and `delhi_roads_cached.geojson`) is available at `/app/data` ensures containerized deployments work out-of-the-box without external Overpass API dependency.
+  2. **Production Backend (Render):** In the Render Dashboard -> Service **`van-setu-backend`** (`srv-d6qfip15pdvs73b9c690`) -> **Environment** -> Add Environment Variable:
+     - Key: `PRUNE_API_KEY`
+     - Value: `<your_prune_api_key>`
+- When `PRUNE_API_KEY` is not set, `POST /api/corridors/explain-ranking` returns `HTTP 200` with `"provider": "deterministic-fallback"`, `"live_ai": false`, and a quantitative analytical summary of the active `heat_weight`, top corridors, and baseline rank shifts.
 
 ---
 
-## 4. Feature & File Inventory in Current Workspace
+## 5. Feature & File Inventory
 
 | Component | Status | Key Files |
 |---|---|---|
