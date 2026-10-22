@@ -400,6 +400,58 @@ function ClickHandler({ onPointQuery }) {
 function MapController({ selectedCorridor, fitTrigger, resetTrigger }) {
   const map = useMap();
 
+  // Automatic Container Size Invalidation (Fix for white map patches when side panels collapse/expand or window resizes)
+  useEffect(() => {
+    if (!map) return;
+
+    const invalidate = () => {
+      try {
+        map.invalidateSize({ animate: false, pan: false });
+      } catch (err) {
+        console.warn("Leaflet size invalidation error:", err);
+      }
+    };
+
+    // Immediate and staggered frame invalidations on mount to capture settled flexbox dimensions
+    invalidate();
+    const rafId = requestAnimationFrame(invalidate);
+    const t50 = setTimeout(invalidate, 50);
+    const t150 = setTimeout(invalidate, 150);
+    const t300 = setTimeout(invalidate, 300);
+
+    const container = map.getContainer();
+    const parentContainer = container?.parentElement;
+
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        invalidate();
+      });
+      if (container) resizeObserver.observe(container);
+      if (parentContainer && parentContainer !== container) {
+        resizeObserver.observe(parentContainer);
+      }
+    }
+
+    const onWindowResize = () => {
+      invalidate();
+    };
+    window.addEventListener("resize", onWindowResize);
+    window.addEventListener("orientationchange", onWindowResize);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(t50);
+      clearTimeout(t150);
+      clearTimeout(t300);
+      window.removeEventListener("resize", onWindowResize);
+      window.removeEventListener("orientationchange", onWindowResize);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [map]);
+
   // Only zoom to corridor when user explicitly triggers fitTrigger (clicking a corridor card or "Fit Corridor")
   useEffect(() => {
     if (fitTrigger > 0 && selectedCorridor && selectedCorridor.geometry) {
@@ -1074,6 +1126,14 @@ export default function Map({
           url={activeBasemap.baseUrl}
           attribution={activeBasemap.attribution}
           zIndex={100}
+          keepBuffer={4}
+          updateWhenIdle={false}
+          maxNativeZoom={16}
+          eventHandlers={{
+            tileerror: (err) => {
+              console.warn("Basemap tile error (retrying / graceful recovery):", err);
+            },
+          }}
         />
 
         {/* 2. Raster Scientific Overlays (NDVI, LST, GDI) with clean transparency */}
@@ -1083,6 +1143,14 @@ export default function Map({
             url={getTileUrl("ndvi")}
             opacity={rasterOpacity}
             zIndex={210}
+            keepBuffer={4}
+            updateWhenIdle={false}
+            maxNativeZoom={16}
+            eventHandlers={{
+              tileerror: (err) => {
+                console.warn("NDVI tile error:", err);
+              },
+            }}
           />
         )}
 
@@ -1092,6 +1160,14 @@ export default function Map({
             url={getTileUrl("lst")}
             opacity={rasterOpacity}
             zIndex={220}
+            keepBuffer={4}
+            updateWhenIdle={false}
+            maxNativeZoom={16}
+            eventHandlers={{
+              tileerror: (err) => {
+                console.warn("LST tile error:", err);
+              },
+            }}
           />
         )}
 
@@ -1101,6 +1177,14 @@ export default function Map({
             url={getTileUrl("gdi")}
             opacity={rasterOpacity}
             zIndex={230}
+            keepBuffer={4}
+            updateWhenIdle={false}
+            maxNativeZoom={16}
+            eventHandlers={{
+              tileerror: (err) => {
+                console.warn("GDI tile error:", err);
+              },
+            }}
           />
         )}
 
@@ -1110,6 +1194,9 @@ export default function Map({
           url={ESRI_TRANSPORTATION_URL}
           opacity={activeLayers.osmRoads ? 0.88 : 0.36}
           zIndex={260}
+          keepBuffer={4}
+          updateWhenIdle={false}
+          maxNativeZoom={16}
         />
 
         {/* 4. Crisp Place & Boundary Reference Labels Above Raster Layers */}
@@ -1118,6 +1205,9 @@ export default function Map({
           url={activeBasemap.labelUrl}
           opacity={0.9}
           zIndex={280}
+          keepBuffer={4}
+          updateWhenIdle={false}
+          maxNativeZoom={16}
         />
 
         {/* 5. Parks & Green Overlay */}

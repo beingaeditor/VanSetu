@@ -4,6 +4,21 @@
   position: relative;
   flex: 1;
   height: 100%;
+  width: 100%;
+  background: #07101f;
+  overflow: hidden;
+}
+
+.map-container .leaflet-container {
+  background: #07101f !important;
+  width: 100% !important;
+  height: 100% !important;
+  outline: none;
+}
+
+.map-container .leaflet-tile-container img {
+  /* Prevent ghost image outlines during fast pan or tile switch */
+  image-rendering: auto;
 }
 
 /* ─── Legend ───────────────────────────────────────────────── */
