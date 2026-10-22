@@ -4,11 +4,11 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://van-setu-backend.onrender.com/api/:path*"
+      "source": "/api/(.*)",
+      "destination": "https://van-setu-backend.onrender.com/api/$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]
