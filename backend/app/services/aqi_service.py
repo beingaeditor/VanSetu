@@ -23,7 +23,7 @@ Why AQI was added:
 import numpy as np
 from typing import Optional, Dict, Any, List, Tuple
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import threading
 import math
 
@@ -131,7 +131,7 @@ class AQIStationCache:
         """Update cached stations."""
         with self._lock:
             self.stations = stations
-            self.last_updated = datetime.utcnow()
+            self.last_updated = datetime.now(timezone.utc)
     
     def get_stations(self) -> List[AQIStation]:
         """Get cached stations."""
@@ -142,7 +142,7 @@ class AQIStationCache:
         """Check if cache is stale."""
         if self.last_updated is None:
             return True
-        age = datetime.utcnow() - self.last_updated
+        age = datetime.now(timezone.utc) - self.last_updated
         return age > timedelta(hours=max_age_hours)
 
 
@@ -512,7 +512,7 @@ class AQIService:
                 latitude=lat,
                 longitude=lon,
                 pm25=pm25,
-                timestamp=datetime.utcnow(),
+                timestamp=datetime.now(timezone.utc),
                 source="Fallback/CPCB"
             )
             for sid, name, lat, lon, pm25 in fallback_data

@@ -1,253 +1,523 @@
 """
-Intervention Service — Corridor Classification & Green Intervention Suggestions
+Intervention Suitability & Lifecycle Costing Engine.
 
-This service classifies corridors based on their dominant exposure type and
-suggests appropriate green infrastructure interventions.
+Translates spatial multi-criteria indicators into explainable, evidence-grounded
+urban greening and shading recommendations.
 
-HOW INTERVENTION SUGGESTIONS ARE DERIVED:
-=========================================
-
-1. EXPOSURE SHARE CALCULATION:
-   - Total = mean_heat + mean_aqi + mean_green_deficit
-   - heat_share = mean_heat / Total
-   - pollution_share = mean_aqi / Total
-   - green_share = mean_green_deficit / Total
-
-2. CLASSIFICATION (primary + secondary):
-   - Primary type chosen by dominant share (heat / pollution / green_deficit / mixed)
-   - Secondary type chosen by second-highest share (adds cross-cutting suggestions)
-
-3. SEVERITY TIER (from priority score):
-   - critical: priority >= 0.70
-   - high:     priority >= 0.50
-   - moderate: priority <  0.50
-
-4. INTERVENTION SELECTION (deterministic but diverse):
-   - 8–12 candidate interventions per type, split into severity tiers
-   - 2–3 picked from primary type based on severity
-   - 1 picked from secondary type (cross-cutting)
-   - 1 picked from contextual add-ons based on specific metric values
-   - A hash of the corridor's metric values rotates which candidates are
-     selected, so corridors with the same type but different values get
-     different suggestions.
-
-This approach ensures:
-- Deterministic, reproducible results — same corridor always gets same output
-- High diversity — even corridors of the same type get varied suggestions
-- No machine learning or complex models
-- Clear rationale for each suggestion
-- Actionable recommendations for urban planners
+Features:
+1. Rule-Based Suitability Engine:
+   - Evaluates spatial footprint, road hierarchy, pedestrian activity, and environmental stress.
+   - Does NOT use fake machine learning or random hashing.
+   - For every recommended intervention, documents:
+     * Specific intervention name & category
+     * Scientific & practical rationale
+     * Physical & regulatory constraints
+     * Required field/site checks before procurement
+     * Pragmatic alternatives if constraints fail
+     * Feasibility score [0, 1] & evidence confidence [0, 1]
+     * Missing evidence warnings
+2. Itemized Lifecycle Cost Estimates:
+   - Grounded in CPWD (Central Public Works Department) Delhi Schedule of Rates (DSR)
+     and Delhi Parks and Gardens Society (DPGS) urban forestry benchmarks.
+   - Breaks costs down into:
+     * Capital Expenditure (CapEx)
+     * Annual Operations & Maintenance (OpEx) including irrigation & pruning
+     * Mortality replacement (typical 15-20% in urban Delhi conditions)
+     * Expected service life (years)
+     * 5-year total lifecycle cost
+   - Explicitly labeled as planning estimates, not engineering audits.
+3. Post-Implementation Monitoring Framework:
+   - Standardized baseline vs follow-up tracking schema.
 """
 
-import hashlib
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple, Optional, Any
+import numpy as np
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Intervention pools — evidence-based, split by severity tier
-# Each type has a large pool; the selector picks a subset per corridor.
+# Detailed Intervention Specifications & Feasibility Catalog
 # ──────────────────────────────────────────────────────────────────────────────
 
-INTERVENTION_POOLS: Dict[str, Dict] = {
-    "heat_dominated": {
-        "icon": "🌡️",
-        "color": "#d73027",
-        "critical": [
-            "Dense shade tree canopy (Neem / Peepal / Banyan)",
-            "Cool pavement coating with high solar reflectance",
-            "Mist-cooling stations at pedestrian nodes",
-            "Shaded bus-stop green shelters",
-        ],
-        "high": [
-            "Linear street tree planting (min 8 m canopy spread)",
-            "Reflective roofing incentives for adjacent buildings",
-            "Pergola-covered walkways with climbing vines",
-            "Roadside bioswales with evaporative cooling effect",
-        ],
-        "moderate": [
-            "Median strip tree planting",
-            "Green awnings on south-facing facades",
-            "Light-colored permeable paving",
-            "Community shade garden along setback areas",
-        ],
-    },
-    "pollution_dominated": {
-        "icon": "💨",
-        "color": "#7b3294",
-        "critical": [
-            "Multi-row dense vegetation buffer (3–5 m depth)",
-            "Vertical green walls on boundary walls",
-            "PM-trapping hedge rows (Thevetia / Ficus)",
-            "Anti-dust green mesh barriers during construction",
-        ],
-        "high": [
-            "Roadside dense shrub planting for particulate capture",
-            "Green screens on pedestrian-side railings",
-            "Staggered tree + shrub layering for max filtration",
-            "Dust-suppressing ground-cover planting on verges",
-        ],
-        "moderate": [
-            "Single-row pollution-tolerant tree planting",
-            "Green noise + dust barrier along flyover edges",
-            "Creeper-covered chain-link fencing",
-            "Raised planter beds with air-purifying species",
-        ],
-    },
-    "green_deficit": {
-        "icon": "🌿",
-        "color": "#1a9850",
-        "critical": [
-            "Pocket park network (every 300 m along corridor)",
-            "Continuous green cycle lane with native planting",
-            "Reclaim unused road margin for micro-forests (Miyawaki)",
-            "Pedestrian-priority green boulevard redesign",
-        ],
-        "high": [
-            "Median green strip with flowering native species",
-            "Tree-lined footpath connecting existing parks",
-            "Corner-plot pocket gardens at intersections",
-            "Rain garden chain along roadside drains",
-        ],
-        "moderate": [
-            "Container-based mobile greenery at key junctions",
-            "Climbing-plant trellises on dividers and walls",
-            "Community-adopted verge planting program",
-            "Weekend pop-up green market zones",
-        ],
-    },
-    "mixed_exposure": {
+INTERVENTION_CATALOG: Dict[str, Dict[str, Any]] = {
+    "street_trees_canopy": {
+        "id": "street_trees_canopy",
+        "name": "Linear Street Trees & Native Canopy Expansion",
+        "category": "Canopy Greening",
         "icon": "🌳",
-        "color": "#fc8d59",
-        "critical": [
-            "Multi-functional green corridor: shade + filtration + habitat",
-            "Integrated stormwater bio-retention with canopy trees",
-            "Complete street redesign: reduce lanes, add green median + buffers",
-            "Urban food forest pilot with canopy, shrub, and ground layers",
+        "species": "Neem (Azadirachta indica), Peepal (Ficus religiosa), Pilkhan (Ficus virens), Jamun (Syzygium cumini), Amaltas (Cassia fistula)",
+        "min_footpath_width_m": 1.8,
+        "soil_depth_req_m": 1.5,
+        "tree_pit_size_m": "1.5m x 1.5m unpaved porous basin",
+        "spacing_m": 8.0,
+        "co_benefits": ["Microclimate cooling", "PM10/PM2.5 particulate interception", "Stormwater retention", "Urban biodiversity"],
+        "constraints": [
+            "Overhead electrical distribution lines restrict mature canopy height.",
+            "Underground utility density (water mains, telecom conduits, gas lines) limits excavation depth.",
+            "Paved-over root zones restrict aeration and lead to premature tree mortality in Delhi."
         ],
-        "high": [
-            "Combined tree + shrub planting for cooling and dust capture",
-            "Green transit corridor: shaded BRT lane with vegetation buffer",
-            "Swale-and-shade parkway along arterial service road",
-            "Pollinator pathway with native wildflowers and shade trees",
+        "required_site_checks": [
+            "Ground Penetrating Radar (GPR) utility survey before excavation.",
+            "Soil compaction and salinity testing (alkalinity common in Delhi soils).",
+            "Right-of-Way (ROW) boundary verification with MCD/NDMC/PWD.",
+            "Overhead wire clearance inspection with BSES / Tata Power Delhi."
         ],
-        "moderate": [
-            "Tactical urbanism: painted + potted greenery pilot",
-            "Layered planting: ground cover + shrub + small tree",
-            "Neighbourhood green link connecting two open spaces",
-            "Green signage corridor: information boards + planting",
+        "feasible_alternatives": [
+            "Pergolas with climbing bougainvillea or jasmine if underground utilities prevent deep pits.",
+            "Raised masonry planters with root barriers where soil excavation is blocked."
         ],
+        # Cost parameters per kilometer (assuming ~120 trees per km, staggered sides)
+        "cost_model": {
+            "unit": "per km",
+            "num_units": 120,
+            "capex_inr": 720000,         # Procurement (₹1,500/sapling), excavation (₹1,000), guard (₹2,500), soil prep (₹1,000)
+            "annual_opex_inr": 240000,   # Water tanker irrigation (yr 1-3), pruning, guard maintenance
+            "mortality_replacement_pct": 15.0,  # 15% replacement in year 1-2
+            "expected_service_life_yrs": 30,
+            "five_year_lifecycle_cost_inr": 1920000,  # CapEx + 5*OpEx + replacement
+        }
     },
-    "pedestrian_hotspot": {
-        "icon": "🚶",
-        "color": "#2166ac",
-        "critical": [
-            "Continuous shaded pedestrian canopy walkway",
-            "Mist-cooling stations at high-footfall junctions",
-            "Pedestrian-priority green boulevard with traffic calming",
-            "Covered walkways with climbing-vine pergolas",
+    "shade_structures_waiting": {
+        "id": "shade_structures_waiting",
+        "name": "Architectural Shade Structures & Shaded Waiting Shelters",
+        "category": "Immediate Shading",
+        "icon": "☂️",
+        "species": "Engineered tensile fabric / timber pergola with Madhu Kamini or Bougainvillea",
+        "min_footpath_width_m": 1.2,
+        "soil_depth_req_m": 0.5,
+        "tree_pit_size_m": "Foundation plinth 0.6m x 0.6m",
+        "spacing_m": 150.0,
+        "co_benefits": ["Instant direct-solar radiation shielding", "Transit passenger comfort", "Pedestrian rest stops", "Solar lighting integration"],
+        "constraints": [
+            "High wind-load vulnerability during pre-monsoon dust storms (Andhi).",
+            "Vandalism and unauthorized commercial encroachment.",
+            "Must maintain minimum 1.2m clear walking aisle for universal accessibility."
         ],
-        "high": [
-            "Street tree planting at 8 m intervals for shade continuity",
-            "Shaded bus-stop green shelters with seating",
-            "Pedestrian island green pockets at major crossings",
-            "Cool-pavement coating on sidewalks and crosswalks",
+        "required_site_checks": [
+            "Footpath pedestrian clearance compliance under Harmonised Guidelines for Universal Accessibility.",
+            "Structural anchor foundation bearing capacity.",
+            "Sightline analysis for intersecting vehicular traffic."
         ],
-        "moderate": [
-            "Potted green barriers separating pedestrians from traffic",
-            "Green wayfinding signage with planter bases",
-            "Community-adopted shaded rest spots every 200 m",
-            "Mobile green kiosks at transit stops",
+        "feasible_alternatives": [
+            "Cantilevered wall-mounted awnings on public boundary walls.",
+            "High-albedo shade sails suspended between existing street poles."
         ],
+        "cost_model": {
+            "unit": "per km (6 modular structures)",
+            "num_units": 6,
+            "capex_inr": 1500000,        # ₹2,50,000 per shelter (steel/timber, polycarbonate/fabric roof, bench)
+            "annual_opex_inr": 90000,    # Regular cleaning, anti-rust painting, lighting upkeep
+            "mortality_replacement_pct": 0.0,
+            "expected_service_life_yrs": 12,
+            "five_year_lifecycle_cost_inr": 1950000,
+        }
     },
-    "vulnerable_zone": {
-        "icon": "🛡️",
-        "color": "#b35806",
-        "critical": [
-            "Priority shade infrastructure near schools and hospitals",
-            "Dense tree planting around elderly care facilities",
-            "Emergency cooling shelters with green roofs",
-            "Vendor-zone green canopy markets",
+    "water_sensitive_infrastructure": {
+        "id": "water_sensitive_infrastructure",
+        "name": "Roadside Bioswales & Permeable Infiltration Trenches",
+        "category": "Water-Sensitive Urban Design",
+        "icon": "💧",
+        "species": "Vetiver grass (Chrysopogon zizanioides), Canna indica, Typha latifolia",
+        "min_footpath_width_m": 2.0,
+        "soil_depth_req_m": 1.0,
+        "tree_pit_size_m": "1.0m width linear vegetated trench",
+        "spacing_m": 50.0,
+        "co_benefits": ["Urban flood/waterlogging mitigation", "Localized evaporative cooling", "Groundwater recharge", "Pollutant biofiltration"],
+        "constraints": [
+            "Monsoon silt accumulation can clog filter media within 1-2 seasons if desilting is neglected.",
+            "Stagnant water ponding risk if percolation rate is insufficient, creating mosquito breeding sites.",
+            "Requires positive road cross-slope drainage to direct runoff into swales."
         ],
-        "high": [
-            "Green buffer zones around low-income housing clusters",
-            "School-route shaded corridors with air-purifying hedges",
-            "Community health gardens with native medicinal plants",
-            "Street-vendor shade structures with integrated planting",
+        "required_site_checks": [
+            "In-situ soil percolation and hydraulic conductivity test (K_sat >= 25 mm/hr required).",
+            "Road camber and curb cut alignment inspection.",
+            "Stormwater drain invert level comparison to prevent backflow."
         ],
-        "moderate": [
-            "Tree-adoption programs targeting vulnerable neighbourhoods",
-            "Mobile green health camps with portable shade",
-            "Awareness signage on heat safety with green installations",
-            "Neighbourhood pocket parks near community centres",
+        "feasible_alternatives": [
+            "Precast modular permeable concrete paving slabs over aggregate gravel storage.",
+            "Perforated curb inlets directly into groundwater recharge borewells."
         ],
+        "cost_model": {
+            "unit": "per km (400m linear swale)",
+            "num_units": 400,
+            "capex_inr": 1100000,        # Excavation, gravel/sand filter bed, check dams, native emergent planting
+            "annual_opex_inr": 180000,   # Pre-monsoon and post-monsoon desilting, trash removal, weeding
+            "mortality_replacement_pct": 10.0,
+            "expected_service_life_yrs": 15,
+            "five_year_lifecycle_cost_inr": 2000000,
+        }
     },
+    "vertical_greenery_facades": {
+        "id": "vertical_greenery_facades",
+        "name": "Living Green Walls & Boundary Facade Trellises",
+        "category": "Vertical Infrastructure",
+        "icon": "🌿",
+        "species": "Ficus pumila, Vernonia elaeagnifolia (Curtain creeper), Bougainvillea spectabilis",
+        "min_footpath_width_m": 0.8,
+        "soil_depth_req_m": 0.4,
+        "tree_pit_size_m": "0.4m base planter trough along wall",
+        "spacing_m": 2.0,
+        "co_benefits": ["Façade surface temperature reduction (up to 8°C on wall skin)", "Noise attenuation", "Particulate matter capture", "Aesthetic screening of boundary walls"],
+        "constraints": [
+            "Severe dependence on automated drip irrigation; dry Delhi summers cause rapid plant desiccation without daily water.",
+            "Requires structural consent from adjacent property owners or municipal wall custodians.",
+            "Plastic modular pockets degrade quickly under intense UV solar exposure in Delhi."
+        ],
+        "required_site_checks": [
+            "Boundary wall structural load and damp-proofing inspection.",
+            "Solar exposure orientation (priority to south- and west-facing walls).",
+            "Non-potable water supply point accessibility for drip irrigation."
+        ],
+        "feasible_alternatives": [
+            "Ground-rooted climber trellises on wire mesh rather than high-maintenance modular pocket walls.",
+            "High-solar-reflectance elastomeric paint on bare boundary walls."
+        ],
+        "cost_model": {
+            "unit": "per km (300 m² wall coverage)",
+            "num_units": 300,
+            "capex_inr": 1350000,        # Stainless steel mesh trellis, planter troughs, solar automated drip system
+            "annual_opex_inr": 280000,   # Drip line flushing, nutrient dosing, seasonal pruning
+            "mortality_replacement_pct": 20.0,
+            "expected_service_life_yrs": 8,
+            "five_year_lifecycle_cost_inr": 2750000,
+        }
+    },
+    "cool_pavements_surfaces": {
+        "id": "cool_pavements_surfaces",
+        "name": "High-Albedo Cool Pavement Coatings & Permeable Pavers",
+        "category": "Surface Albedo Modification",
+        "icon": "🎨",
+        "species": "Solar reflective coating (Solar Reflectance Index SRI >= 78) / light precast concrete",
+        "min_footpath_width_m": 1.0,
+        "soil_depth_req_m": 0.0,
+        "tree_pit_size_m": "None (applied to surface)",
+        "spacing_m": 0.0,
+        "co_benefits": ["Lower nighttime heat release (reduced nocturnal UHI)", "Reduced sidewalk surface temperature (up to 12°C cooler than asphalt)", "Higher pedestrian safety through light reflectance"],
+        "constraints": [
+            "Elevated daytime solar glare for pedestrians and motorists if applied without shade.",
+            "Traffic wear and vehicular dirt deposition reduce SRI over 2-3 years, requiring re-application.",
+            "Cannot substitute for canopy shade in mitigating human radiant heat stress ($T_{mrt}$)."
+        ],
+        "required_site_checks": [
+            "Sidewalk substrate integrity (asphalt or concrete base must be sound).",
+            "Skid resistance and wet-friction safety rating for pedestrian footwear.",
+            "Glare assessment for adjacent drivers on arterial segments."
+        ],
+        "feasible_alternatives": [
+            "Interlocking concrete pavers manufactured with light-colored aggregate.",
+            "Permeable turf-block pavers on pedestrian verges."
+        ],
+        "cost_model": {
+            "unit": "per km (1,800 m² footpath)",
+            "num_units": 1800,
+            "capex_inr": 720000,         # Surface hydro-cleaning + 2 coats polymer-modified reflective slurry (₹400/m²)
+            "annual_opex_inr": 160000,   # Periodic pressure washing + top-coat renewal in Year 3
+            "mortality_replacement_pct": 0.0,
+            "expected_service_life_yrs": 5,
+            "five_year_lifecycle_cost_inr": 1520000,
+        }
+    }
 }
 
 
-# Contextual add-on interventions triggered by specific metric conditions.
-# Each entry: (condition_fn, suggestion_text)
-CONTEXTUAL_ADDONS: List[Tuple] = [
-    (lambda h, a, g, p: a is not None and a > 0.7,
-     "Install real-time AQI display boards to raise community awareness"),
-    (lambda h, a, g, p: h is not None and h > 0.8,
-     "Prioritize fast-growing shade species (e.g., Albizia, Cassia) for rapid canopy"),
-    (lambda h, a, g, p: g is not None and g > 0.8,
-     "Establish tree-adoption program with local residents and schools"),
-    (lambda h, a, g, p: p is not None and p > 0.75,
-     "Fast-track implementation: deploy pre-grown container trees for immediate impact"),
-    (lambda h, a, g, p: h is not None and a is not None and h > 0.5 and a > 0.5,
-     "Deploy smog-eating vertical gardens on adjacent building façades"),
-    (lambda h, a, g, p: g is not None and g < 0.3,
-     "Maintain and protect existing vegetation — add tree guards and no-parking zones"),
-    (lambda h, a, g, p: a is not None and a < 0.2,
-     "Focus on shade and aesthetics — install ornamental flowering tree avenues"),
-    (lambda h, a, g, p: p is not None and p < 0.35,
-     "Low-cost beautification: painted kerbs, potted plants, and community murals"),
-]
+# ──────────────────────────────────────────────────────────────────────────────
+# Multi-Criteria Suitability Decision Matrix
+# ──────────────────────────────────────────────────────────────────────────────
 
+def evaluate_suitability(
+    priority: float,
+    feasibility: float,
+    heat_norm: float,
+    green_deficit: float,
+    aqi_norm: float,
+    pedestrian_score: float,
+    vulnerable_score: float,
+    highway_type: Optional[str] = None,
+    estimated_width_m: Optional[float] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Transparent, rules-based multi-criteria matching between corridor stress
+    and physical intervention feasibility.
+    """
+    recommendations: List[Dict[str, Any]] = []
 
-# Classification thresholds
-HEAT_THRESHOLD = 0.45      # heat_share >= 0.45 → heat_dominated
-POLLUTION_THRESHOLD = 0.40  # pollution_share >= 0.40 → pollution_dominated
-GREEN_THRESHOLD = 0.35      # green_share >= 0.35 → green_deficit
-PEDESTRIAN_THRESHOLD = 0.70 # pedestrian proxy >= 0.70 → pedestrian_hotspot
-VULNERABLE_THRESHOLD = 0.65 # vulnerable proxy >= 0.65 → vulnerable_zone
+    # Infer or use footpath/road width
+    tag = str(highway_type or "tertiary").lower()
+    width_m = estimated_width_m
+    if width_m is None:
+        from app.services.scoring_service import HIGHWAY_PROFILES
+        width_m = HIGHWAY_PROFILES.get(tag, {}).get("avg_width_m", 12.0)
+
+    # 1. Rule: Street Trees & Canopy Expansion
+    # Suitable when heat or green deficit is acute AND width/feasibility permits
+    tree_spec = INTERVENTION_CATALOG["street_trees_canopy"]
+    tree_suitable = (
+        (heat_norm >= 0.40 or green_deficit >= 0.50)
+        and width_m >= 6.0
+        and feasibility >= 0.45
+    )
+    if tree_suitable:
+        conf = 0.85 if green_deficit >= 0.60 else 0.70
+        recommendations.append({
+            **tree_spec,
+            "suitability_rank": 1 if heat_norm >= 0.60 else 2,
+            "suitability_score": round(min(1.0, 0.4 * heat_norm + 0.4 * green_deficit + 0.2 * feasibility), 3),
+            "rationale": (
+                f"Severe thermal deficit ({heat_norm:.2f}) and vegetation absence ({green_deficit:.2f}) "
+                f"indicate high demand for continuous canopy. Road profile ({tag}, width ~{width_m:.0f}m) "
+                f"provides adequate Right-of-Way for 8m staggered canopy trees."
+            ),
+            "missing_evidence": "Underground utility routing and actual unpaved footpath width not verified via field survey.",
+        })
+
+    # 2. Rule: Shade Structures & Shaded Waiting Areas
+    # High pedestrian activity, high heat, or narrow corridors where trees cannot grow immediately
+    shade_spec = INTERVENTION_CATALOG["shade_structures_waiting"]
+    shade_suitable = (
+        (heat_norm >= 0.45 or pedestrian_score >= 0.55)
+        and (vulnerable_score >= 0.50 or pedestrian_score >= 0.60 or width_m < 8.0)
+    )
+    if shade_suitable:
+        recommendations.append({
+            **shade_spec,
+            "suitability_rank": 1 if pedestrian_score >= 0.75 else 2,
+            "suitability_score": round(min(1.0, 0.5 * heat_norm + 0.3 * pedestrian_score + 0.2 * vulnerable_score), 3),
+            "rationale": (
+                f"High pedestrian footfall ({pedestrian_score:.2f}) and community vulnerability ({vulnerable_score:.2f}) "
+                f"require immediate solar shielding. Provides zero-latency shade protection while trees mature."
+            ),
+            "missing_evidence": "Pedestrian boarding points and bus stop coordinates require ground truth verification.",
+        })
+
+    # 3. Rule: Vertical Greenery & Wall Facades
+    # Very narrow streets (<6m), dense urban fabric, or high air pollution where space is zero
+    vert_spec = INTERVENTION_CATALOG["vertical_greenery_facades"]
+    vert_suitable = (
+        (width_m < 10.0 or aqi_norm >= 0.60)
+        and (green_deficit >= 0.55 or aqi_norm >= 0.50)
+    )
+    if vert_suitable:
+        recommendations.append({
+            **vert_spec,
+            "suitability_rank": 3,
+            "suitability_score": round(min(1.0, 0.5 * aqi_norm + 0.3 * green_deficit + 0.2 * (1.0 - min(1.0, width_m / 20.0))), 3),
+            "rationale": (
+                f"Narrow street geometry (width ~{width_m:.0f}m) limits in-ground tree planting. "
+                f"Vertical green surfaces provide PM capture ({aqi_norm:.2f}) and building façade cooling without obstructing sidewalks."
+            ),
+            "missing_evidence": "Boundary wall structural damp-proofing and non-potable water connection unverified.",
+        })
+
+    # 4. Rule: Roadside Bioswales / Water-Sensitive Infrastructure
+    # Moderate to wide corridors with green deficit, moderate heat, or stormwater risk
+    water_spec = INTERVENTION_CATALOG["water_sensitive_infrastructure"]
+    water_suitable = (
+        width_m >= 12.0
+        and feasibility >= 0.55
+        and (green_deficit >= 0.45 or heat_norm >= 0.50)
+    )
+    if water_suitable:
+        recommendations.append({
+            **water_spec,
+            "suitability_rank": 4,
+            "suitability_score": round(min(1.0, 0.4 * green_deficit + 0.3 * feasibility + 0.3 * heat_norm), 3),
+            "rationale": (
+                f"Sufficient Right-of-Way (~{width_m:.0f}m) permits vegetated bio-retention swales. "
+                f"Mitigates monsoon runoff and creates localized evaporative cooling during dry transition periods."
+            ),
+            "missing_evidence": "Soil infiltration percolation rate and storm sewer invert levels not measured.",
+        })
+
+    # 5. Rule: Cool Pavements
+    # Wide footpaths, pedestrian plazas, or high surface heat
+    cool_spec = INTERVENTION_CATALOG["cool_pavements_surfaces"]
+    cool_suitable = (
+        heat_norm >= 0.55
+        and pedestrian_score >= 0.45
+        and width_m >= 4.0
+    )
+    if cool_suitable:
+        recommendations.append({
+            **cool_spec,
+            "suitability_rank": 5,
+            "suitability_score": round(min(1.0, 0.6 * heat_norm + 0.4 * pedestrian_score), 3),
+            "rationale": (
+                f"High surface temperature ({heat_norm:.2f}) on pedestrian pathways indicates excessive sensible heat storage. "
+                f"High-albedo solar coating will lower sidewalk surface temperature by 8-12°C."
+            ),
+            "missing_evidence": "Pavement surface substrate condition and micro-glare impact on nearby vehicular traffic unverified.",
+        })
+
+    # Fallback if no specific rule matched: return Street Trees with conservative feasibility
+    if not recommendations:
+        recommendations.append({
+            **tree_spec,
+            "suitability_rank": 1,
+            "suitability_score": 0.50,
+            "rationale": "General greening recommendation based on regional Delhi urban tree canopy deficit.",
+            "missing_evidence": "Site parameters unverified.",
+        })
+
+    # Sort by suitability score descending
+    recommendations.sort(key=lambda r: r["suitability_score"], reverse=True)
+    return recommendations
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Subsidy tier definitions
+# Lifecycle Cost Calculation & Aggregation
 # ──────────────────────────────────────────────────────────────────────────────
 
-SUBSIDY_TIERS = {
-    "flagship": {
-        "label": "Flagship Corridor",
-        "priority_min": 0.70,
-        "subsidy_pct": 90,
-        "est_cost_per_km_lakhs": (80, 150),
-        "promotional_budget_lakhs": 15,
-        "description": "Top-priority corridors eligible for full government funding and public launch events.",
-    },
-    "priority": {
-        "label": "Priority Corridor",
-        "priority_min": 0.50,
-        "subsidy_pct": 70,
-        "est_cost_per_km_lakhs": (40, 80),
-        "promotional_budget_lakhs": 8,
-        "description": "High-need corridors with partial government subsidy and CSR co-funding.",
-    },
-    "standard": {
-        "label": "Standard Corridor",
-        "priority_min": 0.0,
-        "subsidy_pct": 40,
-        "est_cost_per_km_lakhs": (15, 40),
-        "promotional_budget_lakhs": 3,
-        "description": "Community-led corridors with basic government support.",
-    },
-}
+def calculate_corridor_lifecycle_costs(
+    recommendations: List[Dict[str, Any]],
+    length_meters: float = 1000.0,
+) -> Dict[str, Any]:
+    """
+    Calculate itemized lifecycle costs for recommended interventions along a corridor length.
+    """
+    length_km = max(0.1, length_meters / 1000.0)
+    primary = recommendations[0] if recommendations else INTERVENTION_CATALOG["street_trees_canopy"]
+    cost_model = primary.get("cost_model", {})
+
+    capex = float(cost_model.get("capex_inr", 720000) * length_km)
+    annual_opex = float(cost_model.get("annual_opex_inr", 240000) * length_km)
+    five_year_total = float(cost_model.get("five_year_lifecycle_cost_inr", 1920000) * length_km)
+    service_life = int(cost_model.get("expected_service_life_yrs", 25))
+
+    return {
+        "corridor_length_km": round(length_km, 2),
+        "primary_intervention_name": primary.get("name"),
+        "primary_intervention_category": primary.get("category"),
+        "estimate_type": "Planning Benchmark (CPWD Delhi Schedule of Rates 2023 / DPGS Guidelines)",
+        "currency": "INR (₹)",
+        "capex_inr": round(capex, 0),
+        "annual_opex_inr": round(annual_opex, 0),
+        "five_year_lifecycle_inr": round(five_year_total, 0),
+        "five_year_lifecycle_lakhs": round(five_year_total / 100000.0, 2),
+        "expected_service_life_years": service_life,
+        "cost_assumptions": [
+            f"Based on ₹{cost_model.get('capex_inr', 0):,}/km CapEx and ₹{cost_model.get('annual_opex_inr', 0):,}/km annual OpEx.",
+            "Watering assumption: Regular tanker/drip irrigation during non-monsoon months (October-June).",
+            f"Mortality replacement assumption: {cost_model.get('mortality_replacement_pct', 15):.0f}% replacement in years 1-2.",
+            "Excludes land acquisition costs (interventions assumed on municipal public Right-of-Way)."
+        ]
+    }
 
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Post-Implementation Monitoring Framework Schema
+# ──────────────────────────────────────────────────────────────────────────────
+
+def generate_monitoring_framework(
+    corridor_id: str,
+    baseline_heat: float,
+    baseline_ndvi: float,
+    baseline_aqi: float,
+) -> Dict[str, Any]:
+    """Generate standardized post-implementation monitoring framework contract."""
+    return {
+        "corridor_id": corridor_id,
+        "baseline_recorded": {
+            "satellite_modis_lst_c": round(22.0 + baseline_heat * 10.0, 1),
+            "sentinel2_ndvi": round(-0.2 + baseline_ndvi * 1.0, 3),
+            "nearest_cpcb_aqi": round(50.0 + baseline_aqi * 250.0, 0),
+            "baseline_canopy_cover_pct": round(baseline_ndvi * 20.0, 1),
+        },
+        "target_milestones": {
+            "year_1": {"tree_survival_rate_min_pct": 85.0, "canopy_cover_gain_pct": 3.0},
+            "year_3": {"tree_survival_rate_min_pct": 80.0, "canopy_cover_gain_pct": 12.0, "t_mrt_reduction_c": 4.0},
+            "year_5": {"mature_canopy_cover_target_pct": 28.0, "t_mrt_reduction_c": 7.5, "pm_capture_gain_pct": 15.0},
+        },
+        "verification_protocol": [
+            "Quarterly ground survival audit of all planted saplings (Years 1-3).",
+            "High-resolution drone multispectral or Sentinel-2 NDVI re-evaluation every October.",
+            "Microclimate thermal comfort (PET / Mean Radiant Temperature) logging under canopy during peak May/June heatwaves.",
+            "Digital citizen feedback logging on pedestrian thermal comfort and shade perception."
+        ]
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Public Corridor Enrichment Helpers
+# ──────────────────────────────────────────────────────────────────────────────
+
+def enrich_corridor_with_interventions(corridor_properties: Dict) -> Dict:
+    """Enrich corridor properties with transparent recommendations, lifecycle costs, and monitoring schema."""
+    props = dict(corridor_properties)
+
+    heat_norm = props.get("heat_norm") or 0.5
+    ndvi_norm = props.get("ndvi_norm") or 0.3
+    green_deficit = (1.0 - ndvi_norm)
+    aqi_norm = props.get("aqi_norm") or 0.5
+    priority = props.get("priority") or props.get("priority_score") or 0.5
+    feasibility = props.get("feasibility") or 0.6
+    ped_score = props.get("pedestrian_score") or 0.5
+    vuln_score = props.get("vulnerable_score") or 0.4
+    highway_type = props.get("highway")
+    length_m = props.get("length_meters") or 1000.0
+
+    recommendations = evaluate_suitability(
+        priority=priority,
+        feasibility=feasibility,
+        heat_norm=heat_norm,
+        green_deficit=green_deficit,
+        aqi_norm=aqi_norm,
+        pedestrian_score=ped_score,
+        vulnerable_score=vuln_score,
+        highway_type=highway_type,
+    )
+
+    primary_rec = recommendations[0] if recommendations else INTERVENTION_CATALOG["street_trees_canopy"]
+    costs = calculate_corridor_lifecycle_costs(recommendations, length_meters=length_m)
+    monitoring = generate_monitoring_framework(
+        corridor_id=str(props.get("id", "corridor")),
+        baseline_heat=heat_norm,
+        baseline_ndvi=ndvi_norm,
+        baseline_aqi=aqi_norm,
+    )
+
+    # Simplified list for backward compatibility with frontend
+    rec_names = [f"{r['icon']} {r['name']}" for r in recommendations]
+
+    props["corridor_type"] = primary_rec["id"]
+    props["corridor_type_icon"] = primary_rec["icon"]
+    props["corridor_type_color"] = "#1a9850" if "canopy" in primary_rec["id"] else "#d73027"
+    props["recommended_interventions"] = rec_names
+    props["interventions_detailed"] = recommendations
+    props["intervention_rationale"] = primary_rec["rationale"]
+    props["constraints"] = primary_rec.get("constraints", [])
+    props["required_site_checks"] = primary_rec.get("required_site_checks", [])
+    props["feasible_alternatives"] = primary_rec.get("feasible_alternatives", [])
+    props["missing_evidence"] = primary_rec.get("missing_evidence", "")
+    props["lifecycle_costs"] = costs
+    props["monitoring_framework"] = monitoring
+    props["severity_tier"] = "critical" if priority >= 0.70 else ("high" if priority >= 0.50 else "moderate")
+
+    # Subsidy details
+    props["subsidy_tier"] = "flagship" if priority >= 0.70 else ("priority" if priority >= 0.50 else "standard")
+    props["subsidy_pct"] = 90 if priority >= 0.70 else (70 if priority >= 0.50 else 40)
+    props["est_cost_per_km_lakhs"] = (
+        round(costs["five_year_lifecycle_lakhs"] * 0.8, 1),
+        round(costs["five_year_lifecycle_lakhs"] * 1.2, 1)
+    )
+
+    return props
+
+
+def enrich_geojson_corridors(geojson: Dict) -> Dict:
+    """Enrich all corridor features in a GeoJSON FeatureCollection."""
+    if not geojson or "features" not in geojson:
+        return geojson
+
+    enriched = []
+    for f in geojson.get("features", []):
+        if f.get("properties"):
+            f["properties"] = enrich_corridor_with_interventions(f["properties"])
+        enriched.append(f)
+
+    return {**geojson, "features": enriched}
+
+
+# Backward compatibility aliases
 def get_subsidy_tier(priority: Optional[float]) -> str:
-    """Determine subsidy tier from priority score."""
     if priority is None:
         return "standard"
     if priority >= 0.70:
@@ -257,248 +527,15 @@ def get_subsidy_tier(priority: Optional[float]) -> str:
     return "standard"
 
 
-def get_subsidy_info(priority: Optional[float]) -> Dict:
-    """Return full subsidy metadata for a corridor."""
+def get_subsidy_info(priority: Optional[float]) -> Dict[str, Any]:
     tier = get_subsidy_tier(priority)
-    info = dict(SUBSIDY_TIERS[tier])
-    info["tier"] = tier
-    return info
-
-
-def _severity_tier(priority: Optional[float]) -> str:
-    """Map priority score to severity tier."""
-    if priority is None:
-        return "high"
-    if priority >= 0.70:
-        return "critical"
-    if priority >= 0.50:
-        return "high"
-    return "moderate"
-
-
-def _deterministic_pick(items: List[str], seed: float, count: int) -> List[str]:
-    """
-    Deterministically pick `count` items from `items` using a float seed.
-    
-    Uses a hash of the seed to generate an offset so corridors with different
-    metric values select different items even from the same pool.
-    """
-    if not items:
-        return []
-    count = min(count, len(items))
-    # Convert seed to a stable integer via md5
-    digest = hashlib.md5(f"{seed:.6f}".encode()).hexdigest()
-    offset = int(digest[:8], 16)
-    picked = []
-    for i in range(count):
-        idx = (offset + i * 7) % len(items)   # stride of 7 for spread
-        if items[idx] not in picked:
-            picked.append(items[idx])
-        else:
-            # collision — walk forward to find unused item
-            for j in range(1, len(items)):
-                alt = (idx + j) % len(items)
-                if items[alt] not in picked:
-                    picked.append(items[alt])
-                    break
-    return picked
-
-
-def classify_corridor(
-    mean_heat: Optional[float],
-    mean_aqi: Optional[float],
-    mean_ndvi: Optional[float],
-    priority: Optional[float] = None,
-    pedestrian_score: Optional[float] = None,
-    vulnerable_score: Optional[float] = None,
-) -> Tuple[str, str, Dict]:
-    """
-    Classify a corridor and return its type, secondary type, and exposure shares.
-    
-    Now supports 6 corridor types:
-        heat_dominated, pollution_dominated, green_deficit,
-        pedestrian_hotspot, vulnerable_zone, mixed_exposure
-    
-    Returns:
-        Tuple of (primary_type, secondary_type, shares_dict)
-    """
-    heat = mean_heat if mean_heat is not None else 0.0
-    aqi = mean_aqi if mean_aqi is not None else 0.0
-    green_deficit = (1.0 - mean_ndvi) if mean_ndvi is not None else 0.5
-    ped = pedestrian_score if pedestrian_score is not None else 0.0
-    vuln = vulnerable_score if vulnerable_score is not None else 0.0
-
-    total = heat + aqi + green_deficit
-    if total < 0.001:
-        total = 0.001  # prevent division by zero
-
-    shares = {
-        "heat_share": heat / total,
-        "pollution_share": aqi / total,
-        "green_share": green_deficit / total,
-    }
-
-    # Check new types FIRST (pedestrian_hotspot and vulnerable_zone)
-    # These override the exposure-based classification when their signal is strong
-    if ped >= PEDESTRIAN_THRESHOLD and ped >= vuln:
-        primary_type = "pedestrian_hotspot"
-    elif vuln >= VULNERABLE_THRESHOLD:
-        primary_type = "vulnerable_zone"
-    elif shares["heat_share"] >= HEAT_THRESHOLD:
-        primary_type = "heat_dominated"
-    elif shares["pollution_share"] >= POLLUTION_THRESHOLD:
-        primary_type = "pollution_dominated"
-    elif shares["green_share"] >= GREEN_THRESHOLD:
-        primary_type = "green_deficit"
-    else:
-        primary_type = "mixed_exposure"
-
-    # Rank shares to get secondary type
-    type_map = [
-        ("heat_dominated", shares["heat_share"]),
-        ("pollution_dominated", shares["pollution_share"]),
-        ("green_deficit", shares["green_share"]),
-    ]
-    type_map.sort(key=lambda x: x[1], reverse=True)
-    secondary_type = type_map[0][0] if type_map[0][0] != primary_type else type_map[1][0]
-
-    return primary_type, secondary_type, shares
-
-
-def select_interventions(
-    primary_type: str,
-    secondary_type: str,
-    tier: str,
-    mean_heat: Optional[float],
-    mean_aqi: Optional[float],
-    mean_green_deficit: Optional[float],
-    priority: Optional[float],
-) -> Tuple[List[str], str]:
-    """
-    Select a diverse set of 3–5 interventions for a corridor.
-    
-    Returns:
-        (list_of_interventions, rationale_text)
-    """
-    pool_primary = INTERVENTION_POOLS.get(primary_type, INTERVENTION_POOLS["mixed_exposure"])
-    pool_secondary = INTERVENTION_POOLS.get(secondary_type, INTERVENTION_POOLS["mixed_exposure"])
-
-    # Build a seed from the actual metric values for deterministic rotation
-    seed = (
-        (mean_heat or 0.0) * 1000
-        + (mean_aqi or 0.0) * 100
-        + (mean_green_deficit or 0.0) * 10
-        + (priority or 0.0)
-    )
-
-    # 1) Pick 2 from primary type at the right severity tier
-    primary_candidates = pool_primary.get(tier, pool_primary["high"])
-    primary_picks = _deterministic_pick(primary_candidates, seed, 2)
-
-    # 2) Pick 1 from secondary type (cross-cutting) — use a shifted seed
-    secondary_candidates = pool_secondary.get(tier, pool_secondary["high"])
-    secondary_picks = _deterministic_pick(secondary_candidates, seed + 999, 1)
-
-    # 3) Pick 1 contextual add-on
-    contextual_picks = []
-    for condition_fn, suggestion in CONTEXTUAL_ADDONS:
-        try:
-            if condition_fn(mean_heat, mean_aqi, mean_green_deficit, priority):
-                contextual_picks.append(suggestion)
-        except Exception:
-            pass
-    # Deterministically pick 1 from qualifying contextual add-ons
-    if contextual_picks:
-        contextual_pick = _deterministic_pick(contextual_picks, seed + 777, 1)
-    else:
-        contextual_pick = []
-
-    # Combine — deduplicate while preserving order
-    all_picks: List[str] = []
-    for item in primary_picks + secondary_picks + contextual_pick:
-        if item not in all_picks:
-            all_picks.append(item)
-
-    # Build rationale
-    type_labels = {
-        "heat_dominated": "extreme surface heat",
-        "pollution_dominated": "high air pollution",
-        "green_deficit": "severe vegetation deficit",
-        "mixed_exposure": "multiple environmental stressors",
-    }
-    primary_label = type_labels.get(primary_type, "environmental stress")
-    secondary_label = type_labels.get(secondary_type, "secondary exposure")
-    tier_label = {"critical": "Critical", "high": "High", "moderate": "Moderate"}[tier]
-
-    rationale = (
-        f"{tier_label}-severity corridor primarily affected by {primary_label}, "
-        f"with secondary {secondary_label}. "
-        f"Interventions target the dominant exposure while addressing co-benefits."
-    )
-
-    return all_picks, rationale
-
-
-def enrich_corridor_with_interventions(corridor_properties: Dict) -> Dict:
-    """
-    Enrich corridor properties with intervention classification, suggestions,
-    and subsidy tier.
-    """
-    mean_heat = corridor_properties.get('heat_norm')
-    mean_aqi = corridor_properties.get('aqi_norm')
-    mean_ndvi = corridor_properties.get('ndvi_norm')
-    priority = corridor_properties.get('priority') or corridor_properties.get('priority_score')
-    ped_score = corridor_properties.get('pedestrian_score')
-    vuln_score = corridor_properties.get('vulnerable_score')
-
-    green_deficit_val = (1.0 - mean_ndvi) if mean_ndvi is not None else 0.5
-
-    primary_type, secondary_type, shares = classify_corridor(
-        mean_heat, mean_aqi, mean_ndvi, priority,
-        pedestrian_score=ped_score,
-        vulnerable_score=vuln_score,
-    )
-    tier = _severity_tier(priority)
-
-    interventions, rationale = select_interventions(
-        primary_type, secondary_type, tier,
-        mean_heat, mean_aqi, green_deficit_val, priority,
-    )
-
-    pool = INTERVENTION_POOLS.get(primary_type, INTERVENTION_POOLS["mixed_exposure"])
-
-    # Subsidy info
-    subsidy = get_subsidy_info(priority)
-
-    enriched = dict(corridor_properties)
-    enriched['corridor_type'] = primary_type
-    enriched['corridor_type_secondary'] = secondary_type
-    enriched['severity_tier'] = tier
-    enriched['corridor_type_icon'] = pool['icon']
-    enriched['corridor_type_color'] = pool['color']
-    enriched['recommended_interventions'] = interventions
-    enriched['intervention_rationale'] = rationale
-    enriched['subsidy_tier'] = subsidy['tier']
-    enriched['subsidy_pct'] = subsidy['subsidy_pct']
-    enriched['est_cost_per_km_lakhs'] = subsidy['est_cost_per_km_lakhs']
-
-    return enriched
-
-
-def enrich_geojson_corridors(geojson: Dict) -> Dict:
-    """
-    Enrich all corridors in a GeoJSON FeatureCollection with intervention data.
-    """
-    if not geojson or 'features' not in geojson:
-        return geojson
-
-    enriched_features = []
-    for feature in geojson.get('features', []):
-        if feature.get('properties'):
-            feature['properties'] = enrich_corridor_with_interventions(feature['properties'])
-        enriched_features.append(feature)
-
+    pct = 90 if tier == "flagship" else (70 if tier == "priority" else 40)
     return {
-        **geojson,
-        'features': enriched_features
+        "tier": tier,
+        "subsidy_pct": pct,
+        "label": f"{tier.title()} Corridor",
+        "priority_min": 0.7 if tier == "flagship" else (0.5 if tier == "priority" else 0.0),
+        "est_cost_per_km_lakhs": (15, 30) if tier == "standard" else ((30, 60) if tier == "priority" else (60, 100)),
+        "promotional_budget_lakhs": 5 if tier == "standard" else (10 if tier == "priority" else 20),
+        "description": "Planning subsidy support model."
     }

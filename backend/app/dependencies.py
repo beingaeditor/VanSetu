@@ -66,40 +66,40 @@ def cleanup_services():
 def get_raster_service() -> RasterService:
     """Dependency to get raster service."""
     if _raster_service is None:
-        raise RuntimeError("Raster service not initialized")
+        init_services()
     return _raster_service
 
 
 def get_tile_service() -> TileService:
     """Dependency to get tile service."""
     if _tile_service is None:
-        raise RuntimeError("Tile service not initialized")
+        init_services()
     return _tile_service
 
 
 def get_road_service() -> RoadService:
     """Dependency to get road service."""
     if _road_service is None:
-        raise RuntimeError("Road service not initialized")
+        init_services()
     return _road_service
 
 
 def get_aqi_service() -> AQIService:
     """Dependency to get AQI service."""
     if _aqi_service is None:
-        raise RuntimeError("AQI service not initialized")
+        init_services()
     return _aqi_service
 
 
 def get_corridor_service() -> CorridorService:
     """Dependency to get corridor aggregation service."""
     if _corridor_service is None:
-        raise RuntimeError("Corridor service not initialized")
+        init_services()
     return _corridor_service
 
 
 def get_suggestion_service() -> SuggestionService:
     """Dependency to get community suggestions service."""
     if _suggestion_service is None:
-        raise RuntimeError("Suggestion service not initialized")
+        init_services()
     return _suggestion_service

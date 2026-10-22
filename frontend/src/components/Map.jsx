@@ -89,15 +89,18 @@ function MapController({ selectedCorridor, previousView, onViewSaved }) {
         onViewSaved();
       }
 
-      const coords = selectedCorridor.geometry.coordinates;
-      const latLngs = coords.map((c) => [c[1], c[0]]);
-      const bounds = L.latLngBounds(latLngs);
-
-      map.fitBounds(bounds, {
-        padding: [50, 420],
-        maxZoom: 15,
-        animate: true
-      });
+      try {
+        const bounds = L.geoJSON(selectedCorridor).getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [50, 420],
+            maxZoom: 15,
+            animate: true
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fit corridor bounds:", err);
+      }
     }
   }, [selectedCorridor, map, previousView, onViewSaved]);
 
@@ -120,15 +123,42 @@ function MapViewRestorer({ shouldRestore, previousView, onRestored }) {
   return null;
 }
 
-export default function Map({ activeLayers }) {
+export default function Map({
+  activeLayers,
+  selectedCorridor: externalSelectedCorridor,
+  onSelectCorridor,
+}) {
   const [corridors, setCorridors] = useState(null);
   const [roads, setRoads] = useState(null);
   const [aqiStations, setAqiStations] = useState(null);
 
   const [pointData, setPointData] = useState(null);
 
-  const [selectedCorridor, setSelectedCorridor] = useState(null);
+  const [internalSelectedCorridor, setInternalSelectedCorridor] = useState(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+
+  const selectedCorridor =
+    externalSelectedCorridor !== undefined
+      ? externalSelectedCorridor
+      : internalSelectedCorridor;
+
+  const updateSelectedCorridor = useCallback(
+    (feature) => {
+      if (onSelectCorridor) {
+        onSelectCorridor(feature);
+      } else {
+        setInternalSelectedCorridor(feature);
+      }
+    },
+    [onSelectCorridor]
+  );
+
+  // Open intervention panel and enrich corridor if selected from Sidebar What-if list
+  useEffect(() => {
+    if (externalSelectedCorridor) {
+      setIsPanelOpen(true);
+    }
+  }, [externalSelectedCorridor]);
 
   const [shouldRestoreView, setShouldRestoreView] = useState(false);
   const previousViewRef = useRef(null);
@@ -367,9 +397,22 @@ export default function Map({ activeLayers }) {
                 { sticky: true, className: 'corridor-tooltip' }
               );
               layer.on("click", () => {
-                setSelectedCorridor(feature);
+                updateSelectedCorridor(feature);
                 setIsPanelOpen(true);
               });
+            }}
+          />
+        )}
+
+        {/* Highlight Selected Corridor from What-if Ranking or Map Click */}
+        {selectedCorridor && selectedCorridor.geometry && (
+          <GeoJSON
+            key={`selected-${selectedCorridor.properties?.id || selectedCorridor.id || 'corridor'}`}
+            data={selectedCorridor}
+            style={{
+              color: "#00f2fe",
+              weight: 9,
+              opacity: 1.0,
             }}
           />
         )}
@@ -415,10 +458,30 @@ export default function Map({ activeLayers }) {
 
       {isPanelOpen && selectedCorridor && (
         <InterventionPanel
-          corridor={selectedCorridor}
+          corridor={
+            corridors?.features?.find(
+              (f) =>
+                f.properties?.id &&
+                f.properties.id === (selectedCorridor.properties?.id || selectedCorridor.id)
+            )
+              ? {
+                  ...corridors.features.find(
+                    (f) =>
+                      f.properties?.id === (selectedCorridor.properties?.id || selectedCorridor.id)
+                  ),
+                  properties: {
+                    ...corridors.features.find(
+                      (f) =>
+                        f.properties?.id === (selectedCorridor.properties?.id || selectedCorridor.id)
+                    ).properties,
+                    ...selectedCorridor.properties,
+                  },
+                }
+              : selectedCorridor
+          }
           onClose={() => {
             setIsPanelOpen(false);
-            setSelectedCorridor(null);
+            updateSelectedCorridor(null);
             setShouldRestoreView(true);
           }}
         />

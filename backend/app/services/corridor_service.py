@@ -309,25 +309,36 @@ class CorridorService:
         heat_values = [p.get('heat_norm') for p in corridor_points if p.get('heat_norm') is not None]
         ndvi_values = [p.get('ndvi_norm') for p in corridor_points if p.get('ndvi_norm') is not None]
         
+        feasibility_values = [p.get('feasibility') for p in corridor_points if p.get('feasibility') is not None]
+        confidence_values = [p.get('confidence') for p in corridor_points if p.get('confidence') is not None]
+        walkable_values = [p.get('is_walkable') for p in corridor_points if p.get('is_walkable') is not None]
+
         # Determine dominant exposure type
         mean_heat = np.mean(heat_values) if heat_values else 0
         mean_green_deficit = 1 - np.mean(ndvi_values) if ndvi_values else 0
         mean_aqi = np.mean(aqi_values) if aqi_values else 0
-        
+
         exposure_scores = {
             'heat': mean_heat,
             'green_deficit': mean_green_deficit,
             'air_quality': mean_aqi
         }
         dominant_exposure = max(exposure_scores, key=exposure_scores.get) if exposure_scores else 'unknown'
-        
+
         return {
             'mean_priority': float(np.mean(priority_scores)) if priority_scores else None,
+            'mean_feasibility': float(np.mean(feasibility_values)) if feasibility_values else 0.65,
+            'mean_confidence': float(np.mean(confidence_values)) if confidence_values else 0.70,
+            'is_walkable': all(walkable_values) if walkable_values else True,
             'mean_aqi': float(np.mean(aqi_values)) if aqi_values else None,
             'mean_heat': float(np.mean(heat_values)) if heat_values else None,
             'mean_ndvi': float(np.mean(ndvi_values)) if ndvi_values else None,
             'dominant_exposure': dominant_exposure,
             'corridor_length_m': corridor_length,
+            'ecological_note': (
+                "Human pedestrian corridors connect walking routes. True ecological connectivity "
+                "requires continuous vegetation canopy and stepping-stone habitat patches for urban fauna."
+            ),
         }
     
     def aggregate_corridors(

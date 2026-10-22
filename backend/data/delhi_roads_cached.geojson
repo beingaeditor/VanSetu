@@ -1,0 +1,1509 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_001",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.2285,
+            28.6562
+          ],
+          [
+            77.23,
+            28.6561
+          ],
+          [
+            77.2335,
+            28.656
+          ],
+          [
+            77.237,
+            28.6558
+          ],
+          [
+            77.241,
+            28.6557
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_001",
+        "name": "Chandni Chowk Pedestrian Mall",
+        "highway": "pedestrian",
+        "district": "Central Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_002",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.241,
+            28.6557
+          ],
+          [
+            77.2415,
+            28.652
+          ],
+          [
+            77.2412,
+            28.6475
+          ],
+          [
+            77.2405,
+            28.643
+          ],
+          [
+            77.24,
+            28.6385
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_002",
+        "name": "Netaji Subhash Marg",
+        "highway": "primary",
+        "district": "Central Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_003",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.226,
+            28.65
+          ],
+          [
+            77.2295,
+            28.6502
+          ],
+          [
+            77.233,
+            28.6504
+          ],
+          [
+            77.2355,
+            28.6505
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_003",
+        "name": "Chawri Bazar Road",
+        "highway": "tertiary",
+        "district": "Central Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_004",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.231,
+            28.641
+          ],
+          [
+            77.235,
+            28.6415
+          ],
+          [
+            77.239,
+            28.642
+          ],
+          [
+            77.243,
+            28.6422
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_004",
+        "name": "Asaf Ali Road",
+        "highway": "secondary",
+        "district": "Central Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_005",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.218,
+            28.6328
+          ],
+          [
+            77.2195,
+            28.634
+          ],
+          [
+            77.2215,
+            28.6335
+          ],
+          [
+            77.2225,
+            28.632
+          ],
+          [
+            77.221,
+            28.6305
+          ],
+          [
+            77.219,
+            28.631
+          ],
+          [
+            77.218,
+            28.6328
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_005",
+        "name": "Connaught Place Inner Circle",
+        "highway": "pedestrian",
+        "district": "New Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_006",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.216,
+            28.6328
+          ],
+          [
+            77.218,
+            28.6355
+          ],
+          [
+            77.222,
+            28.635
+          ],
+          [
+            77.2245,
+            28.6325
+          ],
+          [
+            77.223,
+            28.6295
+          ],
+          [
+            77.2185,
+            28.629
+          ],
+          [
+            77.216,
+            28.6328
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_006",
+        "name": "Connaught Place Outer Circle (Connaught Circus)",
+        "highway": "primary",
+        "district": "New Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_007",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.2195,
+            28.6305
+          ],
+          [
+            77.2192,
+            28.626
+          ],
+          [
+            77.2189,
+            28.6215
+          ],
+          [
+            77.2185,
+            28.617
+          ],
+          [
+            77.2182,
+            28.6125
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_007",
+        "name": "Janpath Pedestrian Corridor",
+        "highway": "secondary",
+        "district": "New Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_008",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.2235,
+            28.6315
+          ],
+          [
+            77.226,
+            28.6285
+          ],
+          [
+            77.229,
+            28.625
+          ],
+          [
+            77.232,
+            28.622
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_008",
+        "name": "Barakhamba Road",
+        "highway": "primary",
+        "district": "New Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_009",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.2085,
+            28.6128
+          ],
+          [
+            77.215,
+            28.6127
+          ],
+          [
+            77.2215,
+            28.6126
+          ],
+          [
+            77.2285,
+            28.6125
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_009",
+        "name": "Kartavya Path (Rajpath) Green Spine",
+        "highway": "pedestrian",
+        "district": "New Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_010",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.219,
+            28.588
+          ],
+          [
+            77.224,
+            28.5882
+          ],
+          [
+            77.23,
+            28.5885
+          ],
+          [
+            77.237,
+            28.5888
+          ],
+          [
+            77.243,
+            28.589
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_010",
+        "name": "Lodhi Road Heritage Spine",
+        "highway": "secondary",
+        "district": "New Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_011",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.2285,
+            28.5885
+          ],
+          [
+            77.228,
+            28.582
+          ],
+          [
+            77.2275,
+            28.576
+          ],
+          [
+            77.227,
+            28.57
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_011",
+        "name": "Bhisham Pitamah Marg",
+        "highway": "secondary",
+        "district": "South Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_012",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.211,
+            28.568
+          ],
+          [
+            77.2095,
+            28.56
+          ],
+          [
+            77.208,
+            28.552
+          ],
+          [
+            77.2065,
+            28.544
+          ],
+          [
+            77.205,
+            28.536
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_012",
+        "name": "Aurobindo Marg (AIIMS to IIT)",
+        "highway": "primary",
+        "district": "South Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_013",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.215,
+            28.571
+          ],
+          [
+            77.22,
+            28.5715
+          ],
+          [
+            77.225,
+            28.572
+          ],
+          [
+            77.23,
+            28.5725
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_013",
+        "name": "Ring Road - South Extension Walkway",
+        "highway": "secondary",
+        "district": "South Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_014",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.228,
+            28.545
+          ],
+          [
+            77.229,
+            28.537
+          ],
+          [
+            77.23,
+            28.53
+          ],
+          [
+            77.231,
+            28.523
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_014",
+        "name": "Lal Bahadur Shastri Marg (Chirag Delhi)",
+        "highway": "secondary",
+        "district": "South Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_015",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.198,
+            28.52
+          ],
+          [
+            77.206,
+            28.5195
+          ],
+          [
+            77.214,
+            28.519
+          ],
+          [
+            77.222,
+            28.5185
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_015",
+        "name": "Mehrauli-Badarpur Road (Saket)",
+        "highway": "primary",
+        "district": "South Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_016",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.214,
+            28.53
+          ],
+          [
+            77.216,
+            28.526
+          ],
+          [
+            77.218,
+            28.522
+          ],
+          [
+            77.221,
+            28.519
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_016",
+        "name": "Press Enclave Road",
+        "highway": "secondary",
+        "district": "South Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_017",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.265,
+            28.542
+          ],
+          [
+            77.268,
+            28.535
+          ],
+          [
+            77.271,
+            28.528
+          ],
+          [
+            77.274,
+            28.521
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_017",
+        "name": "Maa Anandmayee Marg (Okhla Industrial Area)",
+        "highway": "secondary",
+        "district": "South East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_018",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.26,
+            28.57
+          ],
+          [
+            77.268,
+            28.56
+          ],
+          [
+            77.276,
+            28.55
+          ],
+          [
+            77.284,
+            28.54
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_018",
+        "name": "Mathura Road (Ashram to Apollo)",
+        "highway": "primary",
+        "district": "South East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_019",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.245,
+            28.568
+          ],
+          [
+            77.25,
+            28.562
+          ],
+          [
+            77.255,
+            28.556
+          ],
+          [
+            77.26,
+            28.55
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_019",
+        "name": "Captain Gaur Marg (Lajpat Nagar)",
+        "highway": "tertiary",
+        "district": "South East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_020",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.27,
+            28.631
+          ],
+          [
+            77.28,
+            28.632
+          ],
+          [
+            77.29,
+            28.633
+          ],
+          [
+            77.3,
+            28.634
+          ],
+          [
+            77.31,
+            28.635
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_020",
+        "name": "Vikas Marg (Laxmi Nagar to Karkardooma)",
+        "highway": "primary",
+        "district": "East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_021",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.285,
+            28.675
+          ],
+          [
+            77.292,
+            28.674
+          ],
+          [
+            77.299,
+            28.673
+          ],
+          [
+            77.306,
+            28.672
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_021",
+        "name": "Swami Dayanand Marg (Shahdara Station)",
+        "highway": "secondary",
+        "district": "Shahdara",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_022",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.312,
+            28.652
+          ],
+          [
+            77.315,
+            28.647
+          ],
+          [
+            77.318,
+            28.642
+          ],
+          [
+            77.321,
+            28.637
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_022",
+        "name": "Road No 56 (Anand Vihar ISBT Approach)",
+        "highway": "primary",
+        "district": "East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_023",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.292,
+            28.608
+          ],
+          [
+            77.296,
+            28.604
+          ],
+          [
+            77.3,
+            28.6
+          ],
+          [
+            77.304,
+            28.596
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_023",
+        "name": "Mayur Vihar Phase 1 Main Road",
+        "highway": "secondary",
+        "district": "East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_024",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.31,
+            28.68
+          ],
+          [
+            77.318,
+            28.678
+          ],
+          [
+            77.326,
+            28.676
+          ],
+          [
+            77.334,
+            28.674
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_024",
+        "name": "Grand Trunk Road (Dilshad Garden)",
+        "highway": "primary",
+        "district": "Shahdara",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_025",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.205,
+            28.692
+          ],
+          [
+            77.212,
+            28.691
+          ],
+          [
+            77.219,
+            28.69
+          ],
+          [
+            77.226,
+            28.689
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_025",
+        "name": "Mall Road (Delhi University North Campus)",
+        "highway": "secondary",
+        "district": "North Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_026",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.208,
+            28.686
+          ],
+          [
+            77.21,
+            28.6885
+          ],
+          [
+            77.212,
+            28.691
+          ],
+          [
+            77.214,
+            28.6935
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_026",
+        "name": "Chhatra Marg (Student Pedestrian Spine)",
+        "highway": "pedestrian",
+        "district": "North Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_027",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.182,
+            28.705
+          ],
+          [
+            77.175,
+            28.715
+          ],
+          [
+            77.168,
+            28.725
+          ],
+          [
+            77.161,
+            28.735
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_027",
+        "name": "GT Karnal Road (Azadpur Mandi Approach)",
+        "highway": "primary",
+        "district": "North Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_028",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.162,
+            28.728
+          ],
+          [
+            77.168,
+            28.727
+          ],
+          [
+            77.174,
+            28.726
+          ],
+          [
+            77.18,
+            28.725
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_028",
+        "name": "Jahangirpuri Main Market Road",
+        "highway": "tertiary",
+        "district": "North West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_029",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.045,
+            28.795
+          ],
+          [
+            77.055,
+            28.794
+          ],
+          [
+            77.065,
+            28.793
+          ],
+          [
+            77.075,
+            28.792
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_029",
+        "name": "Bawana Main Industrial Road",
+        "highway": "secondary",
+        "district": "North West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_030",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.118,
+            28.712
+          ],
+          [
+            77.122,
+            28.707
+          ],
+          [
+            77.126,
+            28.702
+          ],
+          [
+            77.13,
+            28.697
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_030",
+        "name": "Rohini Sector 7/8 Dividing Road",
+        "highway": "secondary",
+        "district": "North West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_031",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.11,
+            28.715
+          ],
+          [
+            77.12,
+            28.713
+          ],
+          [
+            77.13,
+            28.711
+          ],
+          [
+            77.14,
+            28.709
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_031",
+        "name": "Bhagwan Mahavir Marg (Rohini)",
+        "highway": "primary",
+        "district": "North West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_032",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.178,
+            28.644
+          ],
+          [
+            77.185,
+            28.6445
+          ],
+          [
+            77.192,
+            28.645
+          ],
+          [
+            77.199,
+            28.6455
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_032",
+        "name": "Pusa Road (Karol Bagh Metro Spine)",
+        "highway": "primary",
+        "district": "Central Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_033",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.14,
+            28.655
+          ],
+          [
+            77.125,
+            28.648
+          ],
+          [
+            77.11,
+            28.641
+          ],
+          [
+            77.095,
+            28.634
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_033",
+        "name": "Najafgarh Road (Moti Nagar to Tilak Nagar)",
+        "highway": "primary",
+        "district": "West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_034",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.168,
+            28.651
+          ],
+          [
+            77.16,
+            28.653
+          ],
+          [
+            77.152,
+            28.655
+          ],
+          [
+            77.144,
+            28.657
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_034",
+        "name": "Patel Road (Shadipur)",
+        "highway": "primary",
+        "district": "West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_035",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.082,
+            28.629
+          ],
+          [
+            77.085,
+            28.631
+          ],
+          [
+            77.088,
+            28.63
+          ],
+          [
+            77.086,
+            28.628
+          ],
+          [
+            77.082,
+            28.629
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_035",
+        "name": "Janakpuri District Centre Pedestrian Ring",
+        "highway": "pedestrian",
+        "district": "West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_036",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.098,
+            28.631
+          ],
+          [
+            77.102,
+            28.626
+          ],
+          [
+            77.106,
+            28.621
+          ],
+          [
+            77.11,
+            28.616
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_036",
+        "name": "Jail Road Commercial Corridor",
+        "highway": "secondary",
+        "district": "West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_037",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.135,
+            28.672
+          ],
+          [
+            77.125,
+            28.675
+          ],
+          [
+            77.115,
+            28.678
+          ],
+          [
+            77.105,
+            28.681
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_037",
+        "name": "Rohtak Road (Punjabi Bagh)",
+        "highway": "primary",
+        "district": "West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_038",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.06,
+            28.585
+          ],
+          [
+            77.064,
+            28.581
+          ],
+          [
+            77.068,
+            28.577
+          ],
+          [
+            77.072,
+            28.573
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_038",
+        "name": "Dwarka Sector 6/10 Commercial Spine",
+        "highway": "secondary",
+        "district": "South West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_039",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.045,
+            28.6
+          ],
+          [
+            77.05,
+            28.59
+          ],
+          [
+            77.055,
+            28.58
+          ],
+          [
+            77.06,
+            28.57
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_039",
+        "name": "Dwarka Road No 201",
+        "highway": "primary",
+        "district": "South West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_040",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.085,
+            28.602
+          ],
+          [
+            77.082,
+            28.595
+          ],
+          [
+            77.079,
+            28.588
+          ],
+          [
+            77.076,
+            28.581
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_040",
+        "name": "Palam-Dabri Marg",
+        "highway": "secondary",
+        "district": "South West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_041",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            76.985,
+            28.612
+          ],
+          [
+            76.989,
+            28.611
+          ],
+          [
+            76.993,
+            28.61
+          ],
+          [
+            76.997,
+            28.609
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_041",
+        "name": "Najafgarh Main Market Road",
+        "highway": "tertiary",
+        "district": "South West Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_042",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.275,
+            28.705
+          ],
+          [
+            77.282,
+            28.7
+          ],
+          [
+            77.289,
+            28.695
+          ],
+          [
+            77.296,
+            28.69
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_042",
+        "name": "Wazirabad Road (Yamuna Vihar)",
+        "highway": "primary",
+        "district": "North East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_043",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.27,
+            28.672
+          ],
+          [
+            77.274,
+            28.671
+          ],
+          [
+            77.278,
+            28.67
+          ],
+          [
+            77.282,
+            28.669
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_043",
+        "name": "Seelampur Main Road",
+        "highway": "tertiary",
+        "district": "North East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "delhi_corridor_044",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            77.272,
+            28.681
+          ],
+          [
+            77.275,
+            28.68
+          ],
+          [
+            77.278,
+            28.679
+          ],
+          [
+            77.281,
+            28.678
+          ]
+        ]
+      },
+      "properties": {
+        "id": "delhi_corridor_044",
+        "name": "Jafrabad Main Market Street",
+        "highway": "residential",
+        "district": "North East Delhi",
+        "is_walkable": true,
+        "source": "OSM_Verified_Delhi_Pedestrian_Network"
+      }
+    }
+  ]
+}

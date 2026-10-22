@@ -18,14 +18,22 @@ export default function PublicDashboard() {
     osmResidential: false,
   });
 
+  const [selectedCorridor, setSelectedCorridor] = useState(null);
+
   return (
     <div className="app">
       <Sidebar
         activeLayers={activeLayers}
         setActiveLayers={setActiveLayers}
+        selectedCorridor={selectedCorridor}
+        onSelectCorridor={setSelectedCorridor}
       />
       <main className="main-content">
-        <Map activeLayers={activeLayers} />
+        <Map
+          activeLayers={activeLayers}
+          selectedCorridor={selectedCorridor}
+          onSelectCorridor={setSelectedCorridor}
+        />
       </main>
     </div>
   );

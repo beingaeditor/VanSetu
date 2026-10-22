@@ -9,6 +9,7 @@ import { statsApi, layersApi, aqiApi } from '../api';
 import SecondaryUserInput from './SecondaryUserInput';
 import HealthDataInput from './HealthDataInput';
 import PriorityRanking from './PriorityRanking';
+import WhatIfRanking from './WhatIfRanking';
 import './Sidebar.css';
 
 /**
@@ -56,11 +57,12 @@ const StatCard = memo(function StatCard({ title, value, unit, icon }) {
 /**
  * Main Sidebar component
  */
-export default function Sidebar({ activeLayers, setActiveLayers }) {
+export default function Sidebar({ activeLayers, setActiveLayers, selectedCorridor, onSelectCorridor }) {
   const [stats, setStats] = useState(null);
   const [aqiStatus, setAqiStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({
+    whatIfRanking: true,
     layers: true,
     rasters: true,
     vectors: true,
@@ -107,6 +109,28 @@ export default function Sidebar({ activeLayers, setActiveLayers }) {
             <span className="subtitle">Delhi NCT Analysis</span>
           </div>
         </div>
+      </div>
+
+      {/* What-if Corridor Ranking (Mandatory Hackathon Feature + Baseline Comparison) */}
+      <div className="sidebar-section">
+        <button
+          className="section-header"
+          onClick={() => toggleSection('whatIfRanking')}
+          aria-expanded={expanded.whatIfRanking || false}
+          aria-controls="section-whatif-ranking"
+        >
+          <h3>What-if Corridor Ranking</h3>
+          <span className={`chevron ${expanded.whatIfRanking ? 'open' : ''}`} aria-hidden="true">▼</span>
+        </button>
+
+        {expanded.whatIfRanking ? (
+          <div className="section-content" id="section-whatif-ranking">
+            <WhatIfRanking
+              selectedCorridor={selectedCorridor}
+              onSelectCorridor={onSelectCorridor}
+            />
+          </div>
+        ) : null}
       </div>
 
       {/* Layer Controls */}

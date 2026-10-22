@@ -47,14 +47,13 @@ COPY --chown=user:user backend/app ./app
 # Create required directories
 RUN mkdir -p cache data/feedback
 
-# Copy raster data if present
-COPY --chown=user:user delhi_ndvi_10m.tif* ./
-COPY --chown=user:user delhi_lst_modis_daily_celsius.tif* ./
+# Copy raster and cached road data
+COPY --chown=user:user backend/data ./data
 
 # Copy built frontend
 COPY --from=frontend-builder --chown=user:user /app/frontend/dist ./static
 
-# Render uses dynamic PORT
-EXPOSE 10000
+# Render/HF Spaces dynamic PORT (default 7860)
+EXPOSE 7860 10000
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port $PORT"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-7860}"]
