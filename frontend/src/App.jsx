@@ -8,13 +8,16 @@
 import { Routes, Route } from 'react-router-dom';
 import PublicDashboard from './pages/PublicDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<PublicDashboard />} />
-      <Route path="/admin/*" element={<AdminDashboard />} />
-    </Routes>
+    <ErrorBoundary panelName="Van Setu Application Root">
+      <Routes>
+        <Route path="/" element={<PublicDashboard />} />
+        <Route path="/admin/*" element={<AdminDashboard />} />
+      </Routes>
+    </ErrorBoundary>
   );
 }

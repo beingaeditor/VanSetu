@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react';
 import { roadsApi, suggestionsApi } from '../api';
 import CommunitySuggestions from './CommunitySuggestions';
 import CorridorDecisionPlanner from './CorridorDecisionPlanner';
+import ErrorBoundary from './ErrorBoundary';
 import './CorridorInsightPanel.css';
 
 const INTERVENTION_VISUALS = [
@@ -609,7 +610,9 @@ export default function CorridorInsightPanel({
 
           {show3DPlanner && (
             <div className="pro-3d-planner-wrap">
-              <CorridorDecisionPlanner />
+              <ErrorBoundary panelName="3D ROW Simulator">
+                <CorridorDecisionPlanner />
+              </ErrorBoundary>
             </div>
           )}
         </section>

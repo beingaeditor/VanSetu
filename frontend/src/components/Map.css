@@ -874,3 +874,36 @@
   padding-left: 10px;
   border-left: 1px solid rgba(148, 163, 184, 0.22);
 }
+
+/* ─── Non-Blocking Layer Error & Retry Strip ─────────────── */
+.layer-error-retry-box {
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.layer-err-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 10px;
+  color: #fca5a5;
+}
+
+.layer-err-item button {
+  background: rgba(239, 68, 68, 0.25);
+  border: 1px solid rgba(252, 165, 165, 0.45);
+  color: #ffffff;
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 9.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+

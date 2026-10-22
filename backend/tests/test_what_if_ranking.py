@@ -413,3 +413,63 @@ class TestWhatIfCorridorRankingEndpoint:
         assert "SET_HEAT_WEIGHT" in action_types
         assert "SWITCH_MODE" in action_types
 
+
+class TestRasterTileAlignmentAndTransparency:
+    """Regression tests for raster sub-tile alignment, NaN transparency, and out-of-bounds PNGs."""
+
+    def test_boundary_tile_does_not_stretch_across_out_of_bounds_pixels(self):
+        """
+        Tile 11/1460/853 spans lon [76.641, 76.816], while Delhi raster starts at ~76.800.
+        Western columns (0..200) must be transparent (alpha == 0) and eastern columns (236..255)
+        must have valid rendered pixels (alpha == 255).
+        """
+        import io
+        import numpy as np
+        from PIL import Image
+        from app.dependencies import get_tile_service
+
+        ts = get_tile_service()
+        png_bytes = ts.get_tile("gdi", 11, 1460, 853)
+        assert png_bytes is not None
+        img = Image.open(io.BytesIO(png_bytes))
+        assert img.size == (256, 256)
+        assert img.mode == "RGBA"
+        arr = np.array(img)
+        # Western out-of-bounds strip must be 100% transparent
+        assert np.all(arr[:, :200, 3] == 0)
+        # Eastern in-bounds strip must have opaque valid data
+        assert np.any(arr[:, 236:, 3] == 255)
+
+    def test_out_of_bounds_tile_returns_valid_transparent_png(self):
+        """Out-of-bounds tile requests return a valid 256x256 transparent PNG so browser <img> tags never fail."""
+        import io
+        import numpy as np
+        from PIL import Image
+        from fastapi.testclient import TestClient
+        from app.main import app
+
+        client = TestClient(app)
+        res = client.get("/api/tiles/gdi/11/1450/850.png")
+        assert res.status_code == 200
+        assert res.headers["content-type"] == "image/png"
+        img = Image.open(io.BytesIO(res.content))
+        assert img.size == (256, 256)
+        arr = np.array(img)
+        assert np.all(arr[:, :, 3] == 0)
+
+    def test_all_three_raster_layers_render_valid_png_at_delhi_center(self):
+        """NDVI, LST, and GDI tiles at Delhi center (11/1463/854) return valid 256x256 RGBA PNGs."""
+        import io
+        from PIL import Image
+        from fastapi.testclient import TestClient
+        from app.main import app
+
+        client = TestClient(app)
+        for layer in ("ndvi", "lst", "gdi"):
+            res = client.get(f"/api/tiles/{layer}/11/1463/854.png")
+            assert res.status_code == 200
+            img = Image.open(io.BytesIO(res.content))
+            assert img.size == (256, 256)
+            assert img.mode == "RGBA"
+
+

@@ -43,12 +43,8 @@ async def get_tile(
     tile_bytes = tile_service.get_tile(layer.lower(), z, x, y)
     
     if tile_bytes is None:
-        # Return transparent tile for out-of-bounds requests
-        return Response(
-            content=b'',
-            status_code=204,
-            headers={"Content-Type": "image/png"}
-        )
+        # Return valid 256x256 transparent PNG for out-of-bounds requests so <img> tags never fail
+        tile_bytes = tile_service.get_transparent_tile()
     
     return Response(
         content=tile_bytes,

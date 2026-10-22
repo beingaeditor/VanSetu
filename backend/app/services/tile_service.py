@@ -100,7 +100,7 @@ class TileService:
             return None
         
         # Extract tile data from raster
-        tile_data = self._extract_tile_data(data, tile_bounds, data_bounds)
+        tile_data = self._extract_tile_data(data, tile_bounds, data_bounds, z=z, x=x, y=y)
         if tile_data is None:
             return None
         
@@ -131,48 +131,111 @@ class TileService:
         
         return not (e1 < w2 or e2 < w1 or n1 < s2 or n2 < s1)
     
+    def _lat_to_tile_y(self, lat: float, z: int) -> float:
+        """Convert latitude in degrees to fractional Web Mercator tile Y coordinate."""
+        lat_rad = np.radians(np.clip(lat, -85.05112878, 85.05112878))
+        n = 2.0 ** z
+        return (1.0 - np.log(np.tan(lat_rad) + 1.0 / np.cos(lat_rad)) / np.pi) / 2.0 * n
+
+    def _lon_to_tile_x(self, lon: float, z: int) -> float:
+        """Convert longitude in degrees to fractional Web Mercator tile X coordinate."""
+        n = 2.0 ** z
+        return (lon + 180.0) / 360.0 * n
+
     def _extract_tile_data(
         self, 
         data: np.ndarray, 
         tile_bounds: Tuple, 
-        data_bounds: Tuple
+        data_bounds: Tuple,
+        z: Optional[int] = None,
+        x: Optional[int] = None,
+        y: Optional[int] = None,
     ) -> Optional[np.ndarray]:
-        """Extract and resample raster data for a tile."""
+        """
+        Extract and resample raster data for a tile with exact sub-tile placement
+        and NaN-aware bilinear interpolation so boundary tiles never stretch
+        or bleed NoData values across out-of-bounds areas.
+        """
         tw, ts, te, tn = tile_bounds
         dw, ds, de, dn = data_bounds
-        
+
+        # Compute geographic intersection between tile and raster bounds
+        iw = max(tw, dw)
+        ie = min(te, de)
+        is_ = max(ts, ds)
+        in_ = min(tn, dn)
+
+        if iw >= ie or is_ >= in_:
+            return None
+
         h, w = data.shape
-        
-        # Calculate pixel coordinates
         px_per_lon = w / (de - dw)
         px_per_lat = h / (dn - ds)
-        
-        # Tile extent in pixel coordinates
-        col_start = int((tw - dw) * px_per_lon)
-        col_end = int((te - dw) * px_per_lon)
-        row_start = int((dn - tn) * px_per_lat)
-        row_end = int((dn - ts) * px_per_lat)
-        
-        # Clamp to valid range
-        col_start = max(0, col_start)
-        col_end = min(w, col_end)
-        row_start = max(0, row_start)
-        row_end = min(h, row_end)
-        
+
+        # Source raster pixel indices for the intersection bbox
+        col_start = max(0, int(np.floor((iw - dw) * px_per_lon)))
+        col_end = min(w, int(np.ceil((ie - dw) * px_per_lon)))
+        row_start = max(0, int(np.floor((dn - in_) * px_per_lat)))
+        row_end = min(h, int(np.ceil((dn - is_) * px_per_lat)))
+
         if col_start >= col_end or row_start >= row_end:
             return None
-        
-        # Extract subset
+
         subset = data[row_start:row_end, col_start:col_end]
-        
         if subset.size == 0:
             return None
-        
-        # Resize to tile size using PIL for better quality
-        img = Image.fromarray(subset.astype(np.float32), mode='F')
-        img = img.resize((self.tile_size, self.tile_size), Image.Resampling.BILINEAR)
-        
-        return np.array(img)
+
+        # Destination pixel coordinates within the 256x256 tile canvas
+        S = self.tile_size
+        dst_x0 = int(np.round((iw - tw) / (te - tw) * S))
+        dst_x1 = int(np.round((ie - tw) / (te - tw) * S))
+
+        if z is not None and y is not None:
+            # Exact Web Mercator Y pixel mapping within tile y
+            ty_north = (self._lat_to_tile_y(in_, z) - y) * S
+            ty_south = (self._lat_to_tile_y(is_, z) - y) * S
+            dst_y0 = int(np.round(ty_north))
+            dst_y1 = int(np.round(ty_south))
+        else:
+            dst_y0 = int(np.round((tn - in_) / (tn - ts) * S))
+            dst_y1 = int(np.round((tn - is_) / (tn - ts) * S))
+
+        dst_x0 = max(0, min(S, dst_x0))
+        dst_x1 = max(0, min(S, dst_x1))
+        dst_y0 = max(0, min(S, dst_y0))
+        dst_y1 = max(0, min(S, dst_y1))
+
+        out_w = dst_x1 - dst_x0
+        out_h = dst_y1 - dst_y0
+        if out_w <= 0 or out_h <= 0:
+            return None
+
+        # NaN-safe resampling: interpolate valid data and valid mask separately
+        sub_f32 = subset.astype(np.float32)
+        valid_mask = np.isfinite(sub_f32) & (sub_f32 > -999.0)
+        if not np.any(valid_mask):
+            return None
+
+        filled = np.where(valid_mask, sub_f32, 0.0).astype(np.float32)
+        mask_f32 = valid_mask.astype(np.float32)
+
+        img_val = Image.fromarray(filled, mode='F').resize(
+            (out_w, out_h), Image.Resampling.BILINEAR
+        )
+        img_msk = Image.fromarray(mask_f32, mode='F').resize(
+            (out_w, out_h), Image.Resampling.BILINEAR
+        )
+
+        res_val = np.array(img_val, dtype=np.float32)
+        res_msk = np.array(img_msk, dtype=np.float32)
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            resampled = np.where(res_msk > 0.25, res_val / np.maximum(res_msk, 1e-5), np.nan)
+
+        # Place resampled intersection into full 256x256 tile canvas (rest is NaN/transparent)
+        canvas = np.full((S, S), np.nan, dtype=np.float32)
+        canvas[dst_y0:dst_y1, dst_x0:dst_x1] = resampled
+        return canvas
     
     def _data_to_png(self, data: np.ndarray, layer: str) -> bytes:
         """Convert normalized data array to PNG bytes."""
@@ -210,6 +273,20 @@ class TileService:
         
         return buffer.getvalue()
     
+    def get_transparent_tile(self) -> bytes:
+        """Return a cached 256x256 transparent PNG tile for out-of-bounds requests."""
+        cache_key = "__transparent_tile__"
+        if cache_key in self._cache:
+            return self._cache[cache_key]
+        rgba = np.zeros((self.tile_size, self.tile_size, 4), dtype=np.uint8)
+        img = Image.fromarray(rgba, mode='RGBA')
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG', optimize=True)
+        buffer.seek(0)
+        png_bytes = buffer.getvalue()
+        self._cache[cache_key] = png_bytes
+        return png_bytes
+
     def clear_cache(self):
         """Clear the tile cache."""
         self._cache.clear()

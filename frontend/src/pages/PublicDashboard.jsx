@@ -31,6 +31,7 @@ import CorridorInsightPanel from '../components/CorridorInsightPanel';
 import VanSetuAIAgent from '../components/VanSetuAIAgent';
 import SecondaryUserInput from '../components/SecondaryUserInput';
 import HealthDataInput from '../components/HealthDataInput';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { roadsApi, statsApi, aqiApi } from '../api';
 import '../App.css';
 
@@ -1311,12 +1312,16 @@ export default function PublicDashboard() {
             mobileTab === 'map' ? 'mobile-active' : ''
           }`}
         >
-          <Map
-            activeLayers={activeLayers}
-            setActiveLayers={setActiveLayers}
-            selectedCorridor={selectedCorridor}
-            onSelectCorridor={setSelectedCorridor}
-          />
+          <ErrorBoundary panelName="Spatial Map Canvas">
+            <Map
+              activeLayers={activeLayers}
+              setActiveLayers={setActiveLayers}
+              selectedCorridor={selectedCorridor}
+              onSelectCorridor={setSelectedCorridor}
+              rankedCorridors={displayedCorridors}
+              heatWeight={heatWeight}
+            />
+          </ErrorBoundary>
         </main>
 
         {/* ═══ RIGHT COLUMN: DETAILED CORRIDOR INSIGHT & ACTION ═══ */}
@@ -1326,19 +1331,21 @@ export default function PublicDashboard() {
               mobileTab === 'right' ? 'mobile-active' : ''
             }`}
           >
-            <CorridorInsightPanel
-              corridor={selectedCorridor}
-              comparisonTable={comparisonTable}
-              baselineComparison={rankData?.baseline_comparison}
-              heatWeight={heatWeight}
-              topN={topN}
-              studioMode={studioMode}
-              activeScenario={activeScenario}
-              sensitivityData={sensitivityData}
-              onSelectCorridor={setSelectedCorridor}
-              onOpenModal={setActiveModal}
-              onExportReport={handleExportReport}
-            />
+            <ErrorBoundary panelName="Detailed Corridor Insight Panel">
+              <CorridorInsightPanel
+                corridor={selectedCorridor}
+                comparisonTable={comparisonTable}
+                baselineComparison={rankData?.baseline_comparison}
+                heatWeight={heatWeight}
+                topN={topN}
+                studioMode={studioMode}
+                activeScenario={activeScenario}
+                sensitivityData={sensitivityData}
+                onSelectCorridor={setSelectedCorridor}
+                onOpenModal={setActiveModal}
+                onExportReport={handleExportReport}
+              />
+            </ErrorBoundary>
           </div>
         )}
       </div>
