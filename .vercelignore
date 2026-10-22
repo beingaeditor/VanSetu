@@ -1,0 +1,7 @@
+backend/
+venv/
+.venv/
+*.tif
+*.tiff
+docs/
+.pytest_cache/

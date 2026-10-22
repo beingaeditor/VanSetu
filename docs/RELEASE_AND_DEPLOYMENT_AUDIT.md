@@ -38,7 +38,8 @@ The organizer/user screenshot of the Vercel dashboard shows four projects under 
 
 ### Canonical Target Recommendation
 - **Primary Vercel Project:** **`van-setu-final`** (`https://van-setu-final.vercel.app`) is the canonical frontend deployment because it is the only Vercel project deployed from commit `2949c4b` (`fix: Update API endpoints to support VITE_API_BASE_URL for production deployment`), which added `import.meta.env.VITE_API_BASE_URL` support across `Map.jsx`, `Sidebar.jsx`, `PriorityRanking.jsx`, `InterventionPanel.jsx`, `DataCards.jsx`, and `AnalyticsPage.jsx`.
-- **Root Directory for Vercel Frontend Builds:** `frontend` (Vite React SPA, build command `npm run build`, output directory `dist`).
+- **Root Directory & `vercel.json`:** Configured via root `vercel.json` (`installCommand: "npm install --prefix frontend"`, `buildCommand: "npm run build --prefix frontend"`, `outputDirectory: "frontend/dist"`, SPA rewrites to `/index.html`).
+- **Latest Production Deployment Verified:** `https://van-setu-final.vercel.app` (aliased from `https://van-setu-final-riddbrhsn-niharika-singhs-projects-b3043020.vercel.app`).
 
 ---
 

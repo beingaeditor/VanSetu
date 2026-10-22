@@ -15,3 +15,10 @@ dist/
 stats.json
 .DS_Store
 backend/data/feedback/
+.vercel
+.env
+.env.local
+.env.*.local
+!.env.example
+!backend/.env.example
+!frontend/.env.production
