@@ -1,0 +1,724 @@
+/* CorridorInsightPanel.css — Right Column of the Van Setu Urban Climate Studio */
+
+.insight-panel {
+  width: 410px;
+  min-width: 390px;
+  max-width: 430px;
+  height: 100%;
+  background: linear-gradient(180deg, #0b1628 0%, #091220 100%);
+  border-left: 1px solid rgba(56, 189, 248, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  color: #e2e8f0;
+  z-index: 20;
+}
+
+/* 1. Inspected Corridor Header Card */
+.insight-header-card {
+  background: linear-gradient(145deg, rgba(15, 29, 54, 0.96), rgba(11, 22, 42, 0.96));
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 12px;
+  padding: 13px 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.insight-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.insight-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #38bdf8;
+}
+
+.eyebrow-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00f2fe;
+  box-shadow: 0 0 8px #00f2fe;
+}
+
+.insight-upvote-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(14, 165, 233, 0.12);
+  color: #bae6fd;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.insight-upvote-pill:hover:not(:disabled) {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: #38bdf8;
+}
+
+.insight-upvote-pill.active {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #a7f3d0;
+}
+
+.insight-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+}
+
+.insight-corridor-title {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #f8fafc;
+}
+
+.insight-corridor-title span {
+  color: #38bdf8;
+}
+
+.insight-corridor-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.insight-corridor-sub code {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: #7dd3fc;
+  background: rgba(14, 165, 233, 0.12);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.insight-rank-badge-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  background: rgba(2, 132, 199, 0.18);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 9px;
+  padding: 5px 10px;
+  min-width: 66px;
+}
+
+.insight-rank-num {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 800;
+  color: #00f2fe;
+  line-height: 1.1;
+}
+
+.insight-score-val {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: #cbd5e1;
+}
+
+/* KPI Strip */
+.insight-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.insight-kpi-item {
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  padding: 6px 7px;
+  display: flex;
+  flex-direction: column;
+}
+
+.insight-kpi-item.heat {
+  border-top: 2px solid #f97316;
+}
+
+.insight-kpi-item.ndvi {
+  border-top: 2px solid #10b981;
+}
+
+.insight-kpi-item.deficit {
+  border-top: 2px solid #eab308;
+}
+
+.insight-kpi-item.aqi {
+  border-top: 2px solid #a855f7;
+}
+
+.kpi-lbl {
+  font-size: 9.5px;
+  color: #94a3b8;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-top: 2px;
+}
+
+.kpi-prov {
+  font-size: 8.5px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* Generic Section Card */
+.insight-section-card {
+  background: rgba(15, 27, 48, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 11px;
+  padding: 12px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.section-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.section-card-header h3 {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.01em;
+}
+
+.section-card-sub {
+  display: block;
+  font-size: 10.5px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.section-card-sub code {
+  font-family: var(--font-mono);
+  color: #38bdf8;
+}
+
+.shift-pill {
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* 2. Baseline vs. What-If Rank Changes Table */
+.insight-table-container {
+  max-height: 190px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.insight-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.insight-comparison-table th {
+  position: sticky;
+  top: 0;
+  background: #0d1b33;
+  color: #94a3b8;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  padding: 6px 7px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.insight-comp-row {
+  cursor: pointer;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  transition: background 0.12s ease;
+}
+
+.insight-comp-row:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.insight-comp-row.selected {
+  background: rgba(0, 242, 254, 0.14);
+}
+
+.insight-comp-row td {
+  padding: 6px 7px;
+  vertical-align: middle;
+}
+
+.col-name {
+  max-width: 145px;
+}
+
+.row-corridor-name {
+  display: inline-block;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.2;
+}
+
+.mini-turnover-badge {
+  display: inline-block;
+  margin-left: 5px;
+  padding: 1px 4px;
+  font-size: 8.5px;
+  font-weight: 800;
+  border-radius: 3px;
+}
+
+.mini-turnover-badge.in {
+  background: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+}
+
+.mini-turnover-badge.out {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.col-rank {
+  font-family: var(--font-mono);
+  color: #94a3b8;
+}
+
+.col-rank.current {
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.rank-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.rank-chip.up {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+}
+
+.rank-chip.down {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+}
+
+.rank-chip.same {
+  background: rgba(148, 163, 184, 0.14);
+  color: #94a3b8;
+}
+
+.col-score {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: #38bdf8;
+}
+
+/* 3. Visual Intervention Cards */
+.intervention-visual-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.intervention-visual-card {
+  background: rgba(11, 20, 37, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 9px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.intervention-visual-card:hover {
+  transform: translateY(-1px);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.intervention-thumb {
+  height: 54px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.thumb-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.thumb-badge {
+  align-self: flex-start;
+  font-size: 8.5px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.45);
+  color: #f8fafc;
+  padding: 1px 5px;
+  border-radius: 4px;
+  backdrop-filter: blur(4px);
+}
+
+.intervention-card-body {
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.intervention-card-body h4 {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.2;
+}
+
+.intervention-card-body p {
+  font-size: 9.5px;
+  color: #94a3b8;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.intervention-spec-tag {
+  margin-top: auto;
+  padding-top: 3px;
+  font-size: 8.5px;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* 4. Lifecycle Cost Estimate (CPWD DSR 2023) */
+.cpwd-tag {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.cpwd-cost-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.cpwd-cost-box {
+  background: rgba(11, 20, 37, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 8px;
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cpwd-cost-box.total {
+  background: rgba(14, 165, 233, 0.12);
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.cost-lbl {
+  font-size: 9.5px;
+  color: #94a3b8;
+}
+
+.cost-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-top: 2px;
+}
+
+.cost-val.highlight {
+  color: #00f2fe;
+}
+
+.cost-sub {
+  font-size: 8.5px;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+/* 5. AI-Assisted Explanation Card */
+.ai-insight-card {
+  background: linear-gradient(145deg, rgba(15, 31, 60, 0.92), rgba(17, 24, 48, 0.92));
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.ai-header-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ai-mode-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.ai-mode-badge.live {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.ai-mode-badge.deterministic {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.ai-insight-body {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #e2e8f0;
+  background: rgba(9, 16, 30, 0.65);
+  border-left: 3px solid #38bdf8;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.ai-inline-error {
+  font-size: 11px;
+  color: #fca5a5;
+}
+
+.ai-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ai-provenance-note {
+  font-size: 9.5px;
+  color: #94a3b8;
+}
+
+.explain-ranking-link-btn {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  border: 1px solid rgba(125, 211, 252, 0.4);
+  border-radius: 7px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: filter 0.15s ease;
+}
+
+.explain-ranking-link-btn:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+/* 6. Professional Studio Exclusive Card */
+.pro-exclusive-card {
+  border-color: rgba(168, 85, 247, 0.4);
+  background: linear-gradient(145deg, rgba(24, 20, 52, 0.9), rgba(14, 23, 44, 0.9));
+}
+
+.pro-pill-badge {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.pro-stability-box {
+  background: rgba(11, 18, 34, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 8px;
+  padding: 8px 9px;
+}
+
+.stability-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 6px;
+}
+
+.stable-txt {
+  color: #34d399;
+}
+
+.volatile-txt {
+  color: #fbbf24;
+}
+
+.scenario-ranks-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.scen-rank-chip {
+  background: rgba(30, 41, 59, 0.65);
+  border-radius: 5px;
+  padding: 4px 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9.5px;
+  text-transform: capitalize;
+  color: #cbd5e1;
+}
+
+.scen-rank-chip strong {
+  font-family: var(--font-mono);
+  color: #38bdf8;
+}
+
+.pro-checks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pro-check-col {
+  background: rgba(11, 18, 34, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 7px;
+  padding: 7px 8px;
+}
+
+.pro-check-col h4 {
+  font-size: 10px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 4px;
+}
+
+.pro-check-col ul {
+  padding-left: 13px;
+  font-size: 9.8px;
+  color: #94a3b8;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pro-alternatives-row {
+  font-size: 10px;
+  color: #bae6fd;
+  background: rgba(14, 165, 233, 0.1);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.pro-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.pro-secondary-btn,
+.pro-primary-export-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pro-secondary-btn {
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+}
+
+.pro-primary-export-btn {
+  background: linear-gradient(135deg, #0ea5e9, #2563eb);
+  border: 1px solid rgba(125, 211, 252, 0.45);
+  color: #fff;
+}
+
+.pro-3d-planner-wrap {
+  margin-top: 6px;
+}
+
+/* 7. Community Suggestions Card */
+.open-modal-mini-btn {
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #7dd3fc;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.open-modal-mini-btn:hover {
+  background: rgba(14, 165, 233, 0.28);
+}
+
+@media (max-width: 1180px) {
+  .insight-panel {
+    width: 360px;
+    min-width: 340px;
+  }
+  .intervention-visual-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -28,6 +28,7 @@ from app.services.scoring_service import (
     clean_highway_tag,
     HIGHWAY_PROFILES,
 )
+from app.services.intervention_service import enrich_corridor_with_interventions
 
 if TYPE_CHECKING:
     from app.services.aqi_service import AQIService
@@ -565,6 +566,30 @@ class RoadService:
             base_green_contrib = base_green_w * (1.0 - ndvi_f)
             base_score = round(base_heat_contrib + base_green_contrib, 4)
 
+            centroid_coords = m.get("centroid") or [77.209, 28.6139]
+            eval_res = compute_priority(
+                heat_norm=heat_f,
+                ndvi_norm=ndvi_f,
+                aqi_norm=None,
+                highway_type=m.get("highway"),
+                lon=float(centroid_coords[0]),
+                lat=float(centroid_coords[1]),
+                district=m.get("district"),
+            )
+            int_props = enrich_corridor_with_interventions({
+                "id": m["id"],
+                "name": m["name"],
+                "district": m["district"],
+                "highway": m["highway"],
+                "length_meters": m["length_meters"],
+                "heat_norm": heat_f,
+                "ndvi_norm": ndvi_f,
+                "priority_score": current_score,
+                "feasibility": eval_res["feasibility"],
+                "pedestrian_score": eval_res["signals"].get("pedestrian", 0.5),
+                "vulnerable_score": eval_res["signals"].get("vulnerable_pop", 0.4),
+            })
+
             valid_items.append({
                 "id": m["id"],
                 "name": m["name"],
@@ -582,6 +607,24 @@ class RoadService:
                 "baseline_score": base_score,
                 "baseline_heat_contribution": round(base_heat_contrib, 4),
                 "baseline_green_deficit_contribution": round(base_green_contrib, 4),
+                "feasibility": eval_res["feasibility"],
+                "confidence": eval_res["confidence"],
+                "is_walkable": eval_res["is_walkable"],
+                "priority_signals": eval_res["signals"],
+                "data_sources": eval_res["data_sources"],
+                "data_warnings": eval_res["data_warnings"],
+                "corridor_type": int_props.get("corridor_type"),
+                "corridor_type_icon": int_props.get("corridor_type_icon"),
+                "corridor_type_color": int_props.get("corridor_type_color"),
+                "recommended_interventions": int_props.get("recommended_interventions", []),
+                "interventions_detailed": int_props.get("interventions_detailed", []),
+                "intervention_rationale": int_props.get("intervention_rationale", ""),
+                "constraints": int_props.get("constraints", []),
+                "required_site_checks": int_props.get("required_site_checks", []),
+                "feasible_alternatives": int_props.get("feasible_alternatives", []),
+                "missing_evidence": int_props.get("missing_evidence", ""),
+                "lifecycle_costs": int_props.get("lifecycle_costs", {}),
+                "severity_tier": int_props.get("severity_tier", "high"),
                 "valid_samples": m["valid_samples"],
                 "centroid": m["centroid"],
                 "geometry": m["geometry"],
@@ -670,6 +713,217 @@ class RoadService:
                 "excluded_no_data_corridors": excluded_no_data,
                 "formula": "score = heat_weight * Heat + (1 - heat_weight) * (1 - NDVI)",
                 "tie_breaking_rule": "Descending score, then ascending corridor id",
+            },
+        }
+
+    def rank_corridors_professional(
+        self,
+        raster_service: RasterService,
+        aqi_service: Optional["AQIService"],
+        weights: Dict[str, float],
+        top: int = 10,
+        user_constraints: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Professional Mode (Van Setu Pro) multi-criteria corridor evaluation.
+        Keeps Need Priority, Implementation Feasibility, and Evidence Confidence conceptually separate.
+        Compares custom professional weights against the standard Balanced 6-factor baseline.
+        """
+        raw_metrics = self.sample_corridor_heat_ndvi(raster_service)
+        if aqi_service is not None:
+            aqi_service.fetch_stations()
+
+        user_constraints = user_constraints or {}
+        user_width_m = user_constraints.get("footpath_width_m")
+        user_budget_lakhs = user_constraints.get("budget_lakhs")
+        user_utility_conflict = bool(user_constraints.get("utility_conflict", False))
+        user_access_restriction = bool(user_constraints.get("access_restriction", False))
+        user_maintenance = str(user_constraints.get("maintenance_capacity") or "standard")
+
+        valid_items: List[Dict[str, Any]] = []
+        for m in raw_metrics:
+            heat = m.get("heat")
+            ndvi = m.get("ndvi")
+            if heat is None or ndvi is None or not np.isfinite(heat) or not np.isfinite(ndvi):
+                continue
+
+            centroid_coords = m.get("centroid") or [77.209, 28.6139]
+            lon, lat = float(centroid_coords[0]), float(centroid_coords[1])
+
+            aqi_norm = None
+            aqi_raw = None
+            aqi_dist = None
+            if aqi_service is not None:
+                aqi_info = aqi_service.get_aqi_at_point(lon, lat)
+                aqi_norm = aqi_info.get("aqi_norm")
+                aqi_raw = aqi_info.get("aqi_raw")
+                aqi_dist = aqi_info.get("distance_km")
+
+            # Baseline 6-factor evaluation
+            base_eval = compute_priority(
+                heat_norm=float(heat),
+                ndvi_norm=float(ndvi),
+                aqi_norm=aqi_norm,
+                highway_type=m.get("highway"),
+                lon=lon,
+                lat=lat,
+                district=m.get("district"),
+                custom_weights=None,
+                aqi_distance_km=aqi_dist,
+            )
+
+            # Custom professional weights evaluation
+            pro_eval = compute_priority(
+                heat_norm=float(heat),
+                ndvi_norm=float(ndvi),
+                aqi_norm=aqi_norm,
+                highway_type=m.get("highway"),
+                lon=lon,
+                lat=lat,
+                district=m.get("district"),
+                custom_weights=weights,
+                aqi_distance_km=aqi_dist,
+            )
+
+            # Adjust feasibility for user-supplied site constraints (labeled as user-provided)
+            adj_feasibility = float(pro_eval["feasibility"])
+            constraint_notes: List[str] = []
+            if user_width_m is not None:
+                try:
+                    w_val = float(user_width_m)
+                    if w_val < 1.8:
+                        adj_feasibility = max(0.05, adj_feasibility - 0.25)
+                        constraint_notes.append(
+                            f"User-supplied footpath width ({w_val:.1f}m < 1.8m min) restricts full street-tree pits."
+                        )
+                    elif w_val >= 3.0:
+                        adj_feasibility = min(1.0, adj_feasibility + 0.10)
+                        constraint_notes.append(
+                            f"User-supplied footpath width ({w_val:.1f}m) supports double-row canopy or bioswale."
+                        )
+                except (ValueError, TypeError):
+                    pass
+
+            if user_utility_conflict:
+                adj_feasibility = max(0.05, adj_feasibility - 0.20)
+                constraint_notes.append("User-reported underground/overhead utility conflict (hard constraint on deep pits).")
+
+            if user_access_restriction:
+                adj_feasibility = max(0.05, adj_feasibility - 0.15)
+                constraint_notes.append("User-reported site access restriction reduces heavy civil works feasibility.")
+
+            if user_maintenance == "low":
+                constraint_notes.append("Preference: Low maintenance capacity — prioritize hardy native drought-tolerant species.")
+
+            int_props = enrich_corridor_with_interventions({
+                "id": m["id"],
+                "name": m["name"],
+                "district": m["district"],
+                "highway": m["highway"],
+                "length_meters": m["length_meters"],
+                "heat_norm": float(heat),
+                "ndvi_norm": float(ndvi),
+                "aqi_norm": aqi_norm,
+                "priority_score": pro_eval["score"],
+                "feasibility": round(adj_feasibility, 3),
+                "pedestrian_score": pro_eval["signals"].get("pedestrian", 0.5),
+                "vulnerable_score": pro_eval["signals"].get("vulnerable_pop", 0.4),
+            })
+
+            costs = int_props.get("lifecycle_costs", {})
+            within_budget = True
+            if user_budget_lakhs is not None:
+                try:
+                    b_val = float(user_budget_lakhs)
+                    if b_val > 0 and costs.get("five_year_lifecycle_lakhs", 0) > b_val:
+                        within_budget = False
+                        constraint_notes.append(
+                            f"5-year lifecycle estimate (₹{costs.get('five_year_lifecycle_lakhs')}L) exceeds user budget cap (₹{b_val:.1f}L)."
+                        )
+                except (ValueError, TypeError):
+                    pass
+
+            signals = pro_eval["signals"]
+            active_w = pro_eval["active_weights"]
+            contributions = {
+                k: round(float(signals.get(k, 0.0)) * float(active_w.get(k, 0.0)), 4)
+                for k in active_w
+            }
+
+            valid_items.append({
+                "id": m["id"],
+                "name": m["name"],
+                "district": m["district"],
+                "highway": m["highway"],
+                "length_meters": m["length_meters"],
+                "heat": round(float(heat), 4),
+                "ndvi": round(float(ndvi), 4),
+                "green_deficit": round(1.0 - float(ndvi), 4),
+                "aqi_raw": aqi_raw,
+                "aqi_norm": aqi_norm,
+                "score": round(float(pro_eval["score"]), 4),
+                "baseline_score": round(float(base_eval["score"]), 4),
+                "feasibility": round(adj_feasibility, 3),
+                "base_feasibility": pro_eval["feasibility"],
+                "confidence": pro_eval["confidence"],
+                "is_walkable": pro_eval["is_walkable"],
+                "within_budget": within_budget,
+                "user_constraint_notes": constraint_notes,
+                "priority_signals": signals,
+                "active_weights": active_w,
+                "criterion_contributions": contributions,
+                "data_sources": pro_eval["data_sources"],
+                "data_warnings": pro_eval["data_warnings"],
+                "corridor_type": int_props.get("corridor_type"),
+                "corridor_type_icon": int_props.get("corridor_type_icon"),
+                "corridor_type_color": int_props.get("corridor_type_color"),
+                "recommended_interventions": int_props.get("recommended_interventions", []),
+                "interventions_detailed": int_props.get("interventions_detailed", []),
+                "intervention_rationale": int_props.get("intervention_rationale", ""),
+                "constraints": int_props.get("constraints", []),
+                "required_site_checks": int_props.get("required_site_checks", []),
+                "feasible_alternatives": int_props.get("feasible_alternatives", []),
+                "lifecycle_costs": costs,
+                "severity_tier": int_props.get("severity_tier", "high"),
+                "centroid": m["centroid"],
+                "geometry": m["geometry"],
+            })
+
+        base_sorted = sorted(valid_items, key=lambda c: (-round(c["baseline_score"], 8), str(c["id"])))
+        base_rank_map = {c["id"]: i for i, c in enumerate(base_sorted, start=1)}
+
+        pro_sorted = sorted(valid_items, key=lambda c: (-round(c["score"], 8), str(c["id"])))
+        enriched_all: List[Dict[str, Any]] = []
+        for curr_rank, item in enumerate(pro_sorted, start=1):
+            b_rank = base_rank_map[item["id"]]
+            r_change = b_rank - curr_rank
+            s_change = round(item["score"] - item["baseline_score"], 4)
+            in_base = b_rank <= top
+            in_curr = curr_rank <= top
+            enriched_all.append({
+                "rank": curr_rank,
+                **item,
+                "baseline_rank": b_rank,
+                "rank_change": r_change,
+                "score_change": s_change,
+                "entered_top_n": (not in_base) and in_curr,
+                "left_top_n": in_base and (not in_curr),
+            })
+
+        return {
+            "corridors": enriched_all[:top],
+            "comparison_table": [c for c in enriched_all if c["rank"] <= top or c["baseline_rank"] <= top],
+            "summary": {
+                "total_evaluated": len(enriched_all),
+                "top": top,
+                "corridors_shifted": sum(1 for c in enriched_all if c["rank_change"] != 0),
+                "entered_top_n": [c for c in enriched_all if c["entered_top_n"]],
+                "left_top_n": [c for c in enriched_all if c["left_top_n"]],
+                "user_constraints_applied": bool(user_constraints),
+                "user_constraints_disclaimer": (
+                    "User-supplied constraints (width, budget, utility conflicts) are recorded as planning inputs "
+                    "and are not independently field-verified by Van Setu."
+                ),
             },
         }
 

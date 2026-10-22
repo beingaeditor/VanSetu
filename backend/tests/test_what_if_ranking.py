@@ -330,3 +330,86 @@ class TestWhatIfCorridorRankingEndpoint:
         assert text is not None
         assert top_corridor["name"] in text
         assert "0.90" in text or "0.9" in text
+
+    def test_enriched_corridor_fields_in_what_if_ranking(self):
+        """12. Verify enriched tri-vector, interventions, and CPWD lifecycle costs on ranked corridors."""
+        res = client.get("/api/corridors/rank?heat_weight=0.6&top=5")
+        assert res.status_code == 200
+        c = res.json()["corridors"][0]
+        assert "feasibility" in c and 0.0 <= c["feasibility"] <= 1.0
+        assert "confidence" in c and 0.0 <= c["confidence"] <= 1.0
+        assert "recommended_interventions" in c and len(c["recommended_interventions"]) >= 1
+        assert "lifecycle_costs" in c and (
+            "capex_inr" in c["lifecycle_costs"] or "five_year_lifecycle_lakhs" in c["lifecycle_costs"]
+        )
+        assert "priority_signals" in c
+
+    def test_professional_rank_endpoint_validation_and_scoring(self):
+        """13. Verify POST /api/corridors/professional-rank with custom multi-criteria weights & constraints."""
+        # Valid normalized weights summing to 1.0
+        res = client.post(
+            "/api/corridors/professional-rank",
+            json={
+                "weights": {
+                    "lst": 0.40,
+                    "ndvi_deficit": 0.25,
+                    "aqi": 0.15,
+                    "ped_exposure": 0.10,
+                    "vulnerable_pop": 0.05,
+                    "green_access": 0.05,
+                },
+                "constraints": {
+                    "footpath_width_m": 1.6,
+                    "budget_lakhs": 20.0,
+                    "utility_conflict": True,
+                    "access_restriction": False,
+                    "maintenance_capacity": "low",
+                },
+                "top": 5,
+            },
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert len(data["corridors"]) == 5
+        assert data["summary"]["user_constraints_applied"] is True
+        assert any("utility conflict" in n.lower() for n in data["corridors"][0]["user_constraint_notes"])
+
+        # Reject negative weight
+        bad_neg = client.post(
+            "/api/corridors/professional-rank",
+            json={"weights": {"lst": -0.2, "ndvi_deficit": 1.2}},
+        )
+        assert bad_neg.status_code == 422
+
+        # Reject weights not summing to 1.0 or 100
+        bad_sum = client.post(
+            "/api/corridors/professional-rank",
+            json={"weights": {"lst": 0.2, "ndvi_deficit": 0.2}},
+        )
+        assert bad_sum.status_code == 422
+
+    def test_ai_action_agent_endpoint(self):
+        """14. Verify POST /api/corridors/ai-agent returns typed validated actions and grounded explanation."""
+        rank_res = client.get("/api/corridors/rank?heat_weight=0.6&top=5").json()
+        res = client.post(
+            "/api/corridors/ai-agent",
+            json={
+                "prompt": "Set heat weight to 0.85, show top 5 corridors, and switch to Professional Mode",
+                "context": {
+                    "mode": "public",
+                    "scenario": "balanced",
+                    "heat_weight": 0.6,
+                    "top": 5,
+                    "selected_corridor": rank_res["corridors"][0],
+                    "corridors": rank_res["corridors"],
+                },
+            },
+        )
+        assert res.status_code == 200
+        body = res.json()
+        assert "explanation" in body and len(body["explanation"]) > 20
+        assert "actions" in body and isinstance(body["actions"], list)
+        action_types = [a["type"] for a in body["actions"]]
+        assert "SET_HEAT_WEIGHT" in action_types
+        assert "SWITCH_MODE" in action_types
+

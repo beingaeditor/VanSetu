@@ -664,3 +664,213 @@
 .leaflet-tooltip.corridor-tooltip::before {
   border-top-color: rgba(20, 20, 34, 0.94);
 }
+
+/* ─── Studio Floating OVERLAYS Card (Top-Left) ────────────── */
+.floating-overlays-card {
+  position: absolute;
+  top: 14px;
+  left: 52px;
+  z-index: 1000;
+  width: 215px;
+  background: rgba(11, 22, 42, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 11px;
+  padding: 10px 12px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.48);
+  color: #e2e8f0;
+}
+
+.overlays-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.overlays-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+}
+
+.overlays-more-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.overlays-toggle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.overlay-check-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: #f1f5f9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.overlay-check-row input[type="checkbox"] {
+  accent-color: #00f2fe;
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+}
+
+.overlay-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.overlay-name {
+  font-size: 11px;
+  color: #e2e8f0;
+}
+
+.overlays-extra-group {
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.overlays-mini-legend {
+  margin-top: 9px;
+  padding-top: 7px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.mini-legend-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.mini-legend-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1a9850, #91cf60, #fee08b, #fc8d59, #d73027);
+}
+
+/* ─── Top-Right Search & Navigation Controls ─────────────── */
+.map-top-right-controls {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.map-quick-nav-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.map-action-pill {
+  background: rgba(11, 22, 42, 0.92);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  color: #bae6fd;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  transition: all 0.15s ease;
+}
+
+.map-action-pill:hover {
+  background: rgba(14, 165, 233, 0.25);
+  border-color: #00f2fe;
+  color: #ffffff;
+}
+
+/* ─── Selected Corridor Permanent Callout ────────────────── */
+.leaflet-tooltip.selected-corridor-map-callout {
+  background: linear-gradient(135deg, rgba(8, 22, 48, 0.96), rgba(2, 132, 199, 0.92));
+  border: 1px solid #00f2fe;
+  color: #ffffff;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-family: var(--font-body);
+  box-shadow: 0 0 18px rgba(0, 242, 254, 0.45);
+}
+
+/* ─── Bottom-Center Provenance & Opacity Bar ─────────────── */
+.map-bottom-provenance-bar {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(11, 22, 42, 0.93);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  border-radius: 999px;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  max-width: 94%;
+  overflow-x: auto;
+}
+
+.provenance-chips-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10.5px;
+  color: #cbd5e1;
+}
+
+.prov-chip strong {
+  color: #38bdf8;
+}
+
+.opacity-slider-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10.5px;
+  color: #cbd5e1;
+  padding-left: 10px;
+  border-left: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.opacity-slider-control input[type="range"] {
+  width: 75px;
+  accent-color: #00f2fe;
+  cursor: pointer;
+}
+
+.temporal-honesty-tag {
+  font-size: 10px;
+  color: #94a3b8;
+  padding-left: 10px;
+  border-left: 1px solid rgba(148, 163, 184, 0.22);
+}

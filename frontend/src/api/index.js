@@ -62,6 +62,8 @@ export const roadsApi = {
     params: { percentile }
   }),
   explainRanking: (data) => api.post('/corridors/explain-ranking', data),
+  rankProfessional: (data) => api.post('/corridors/professional-rank', data),
+  aiAgent: (data) => api.post('/corridors/ai-agent', data),
 };
 
 /**

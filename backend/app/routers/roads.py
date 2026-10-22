@@ -12,7 +12,7 @@ from app.services.raster_service import RasterService
 from app.services.road_service import RoadService
 from app.services.aqi_service import AQIService
 from app.services.intervention_service import enrich_geojson_corridors
-from app.services.prune_service import explain_corridor_ranking
+from app.services.prune_service import explain_corridor_ranking, run_vansetu_ai_agent
 from app.services.scoring_service import (
     SCENARIOS,
     DEFAULT_WEIGHTS,
@@ -363,4 +363,103 @@ async def explain_ranking_endpoint(
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class ProfessionalRankRequest(BaseModel):
+    weights: Dict[str, float] = Field(
+        default_factory=lambda: dict(DEFAULT_WEIGHTS),
+        description="Custom multi-criteria weights (lst, ndvi_deficit, aqi, ped_exposure, vulnerable_pop, green_access). Must be non-negative and sum to 1.0 (±0.01) or 100 (±1.0).",
+    )
+    constraints: Optional[Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="User-supplied field feasibility constraints (footpath_width_m, budget_lakhs, utility_conflict, access_restriction, maintenance_capacity)",
+    )
+    top: int = Field(default=10, ge=1, le=100)
+
+
+@router.post("/corridors/professional-rank", tags=["Professional Mode"])
+async def professional_rank_endpoint(
+    request_body: ProfessionalRankRequest,
+    road_service: RoadService = Depends(get_road_service),
+    raster_service: RasterService = Depends(get_raster_service),
+    aqi_service: AQIService = Depends(get_aqi_service),
+) -> Dict[str, Any]:
+    """
+    Professional Mode (Van Setu Pro) custom multi-criteria corridor ranking and feasibility assessment.
+    Validates that all weights are finite, non-negative, and sum to 1.0 (±0.01) or 100% (±1.0%).
+    """
+    raw_weights = request_body.weights or {}
+    if not raw_weights:
+        raise HTTPException(status_code=422, detail="Custom weights dictionary cannot be empty.")
+
+    cleaned_weights: Dict[str, float] = {}
+    for k, v in raw_weights.items():
+        try:
+            fv = float(v)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=422, detail=f"Invalid weight for '{k}': must be numeric.")
+        if not math.isfinite(fv) or fv < 0.0:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Invalid weight for '{k}' ({v}): weights must be finite and non-negative (>= 0).",
+            )
+        cleaned_weights[k] = fv
+
+    total_sum = sum(cleaned_weights.values())
+    # Allow either normalized [0..1] summing to ~1.0 OR percentage [0..100] summing to ~100.0
+    if abs(total_sum - 100.0) <= 1.0:
+        cleaned_weights = {k: v / 100.0 for k, v in cleaned_weights.items()}
+        total_sum = sum(cleaned_weights.values())
+
+    if abs(total_sum - 1.0) > 0.02:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Custom multi-criteria weights must sum to 1.0 (100%). Current sum is {total_sum:.4f}.",
+        )
+
+    try:
+        return road_service.rank_corridors_professional(
+            raster_service=raster_service,
+            aqi_service=aqi_service,
+            weights=cleaned_weights,
+            top=request_body.top,
+            user_constraints=request_body.constraints or {},
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class AIAgentRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, max_length=1500, description="User instruction or question for Van Setu AI Action Agent")
+    context: Optional[Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Current studio state (mode, scenario, heat_weight, top, selected_corridor, corridors)",
+    )
+
+
+@router.post("/corridors/ai-agent", tags=["AI Action Agent"])
+async def ai_agent_endpoint(
+    request_body: AIAgentRequest,
+) -> Dict[str, Any]:
+    """
+    Van Setu AI Action Agent endpoint.
+    Parses natural-language studio instructions into validated, typed actions and generates an grounded explanation.
+    """
+    try:
+        ctx = dict(request_body.context or {})
+        if "corridors" in ctx and "available_corridors" not in ctx:
+            ctx["available_corridors"] = ctx["corridors"]
+        res = await run_vansetu_ai_agent(
+            user_message=request_body.prompt,
+            context=ctx,
+        )
+        # Ensure both 'reply' and 'explanation' are populated for callers
+        if "reply" in res and "explanation" not in res:
+            res["explanation"] = res["reply"]
+        return res
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
