@@ -442,7 +442,7 @@ export default function Map({
 
   const [basemapStyle, setBasemapStyle] = useState("dark");
   const [internalSelectedCorridor, setInternalSelectedCorridor] = useState(null);
-  const [rasterOpacity, setRasterOpacity] = useState(0.72);
+  const [rasterOpacity, setRasterOpacity] = useState(0.56);
   const [fitTrigger, setFitTrigger] = useState(0);
   const [resetTrigger, setResetTrigger] = useState(0);
 
@@ -1104,15 +1104,13 @@ export default function Map({
           />
         )}
 
-        {/* 3. Roads Overlay (Esri World Transportation Reference) */}
-        {activeLayers.osmRoads && (
-          <TileLayer
-            key="esri-transportation-overlay"
-            url={ESRI_TRANSPORTATION_URL}
-            opacity={0.78}
-            zIndex={260}
-          />
-        )}
+        {/* 3. Roads Overlay (Esri World Transportation Reference — subtle base context + full highlight when toggled) */}
+        <TileLayer
+          key={`esri-transportation-${activeLayers.osmRoads ? "full" : "subtle"}`}
+          url={ESRI_TRANSPORTATION_URL}
+          opacity={activeLayers.osmRoads ? 0.88 : 0.36}
+          zIndex={260}
+        />
 
         {/* 4. Crisp Place & Boundary Reference Labels Above Raster Layers */}
         <TileLayer

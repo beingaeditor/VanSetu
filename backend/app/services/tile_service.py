@@ -235,10 +235,25 @@ class TileService:
         # Place resampled intersection into full 256x256 tile canvas (rest is NaN/transparent)
         canvas = np.full((S, S), np.nan, dtype=np.float32)
         canvas[dst_y0:dst_y1, dst_x0:dst_x1] = resampled
+
+        # Compute smooth geographic border feathering (2% margin) so dataset bbox edges blend seamlessly
+        lons = np.linspace(iw, ie, out_w, dtype=np.float32)[None, :]
+        lats = np.linspace(in_, is_, out_h, dtype=np.float32)[:, None]
+        margin_lon = (de - dw) * 0.02
+        margin_lat = (dn - ds) * 0.02
+        wx = np.minimum((lons - dw) / margin_lon, (de - lons) / margin_lon)
+        wy = np.minimum((lats - ds) / margin_lat, (dn - lats) / margin_lat)
+        edge_weight = np.clip(np.minimum(wx, wy), 0.0, 1.0)
+
+        alpha_canvas = np.zeros((S, S), dtype=np.float32)
+        alpha_canvas[dst_y0:dst_y1, dst_x0:dst_x1] = np.where(
+            np.isfinite(resampled), edge_weight, 0.0
+        )
+        self._last_alpha_canvas = alpha_canvas
         return canvas
-    
+
     def _data_to_png(self, data: np.ndarray, layer: str) -> bytes:
-        """Convert normalized data array to PNG bytes."""
+        """Convert normalized data array to PNG bytes with smooth boundary alpha."""
         # Get value range
         vmin, vmax = self.VALUE_RANGES.get(layer, (0, 1))
         
@@ -258,8 +273,13 @@ class TileService:
         # Apply colormap
         rgba = cmap(normalized)
         
-        # Set transparent for NaN/NoData
-        rgba[mask] = [0, 0, 0, 0]
+        # Apply smooth edge feathering alpha if available, and 0 for NaN/NoData
+        alpha_canvas = getattr(self, '_last_alpha_canvas', None)
+        if alpha_canvas is not None and alpha_canvas.shape == data.shape:
+            rgba[..., 3] = np.where(mask, 0.0, alpha_canvas)
+        else:
+            rgba[mask] = [0, 0, 0, 0]
+        rgba[mask, :3] = 0.0
         
         # Convert to 8-bit RGBA
         rgba_uint8 = (rgba * 255).astype(np.uint8)
