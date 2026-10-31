@@ -154,3 +154,26 @@ class TestCommunityEndpoints:
         res = client.post("/api/community-data", json=invalid_payload)
         assert res.status_code == 400
         assert "Invalid Delhi district" in res.json()["detail"]
+
+    def test_stats_summary_and_evidence_passport_endpoints(self, client):
+        # 1. /api/stats/summary must NOT return 400 'Invalid layer'
+        stats_sum = client.get("/api/stats/summary")
+        assert stats_sum.status_code == 200
+        s_data = stats_sum.json()
+        assert "raster" in s_data
+        assert "aqi" in s_data
+        assert "corridors_overview" in s_data
+
+        # 2. /api/evidence/passport/delhi_corridor_022 must return genuine passport
+        passp = client.get("/api/evidence/passport/delhi_corridor_022")
+        assert passp.status_code == 200
+        p_data = passp.json()
+        assert p_data["corridor_id"] == "delhi_corridor_022"
+        assert "what_we_know" in p_data
+        assert "data_quality_dimensions" in p_data
+        assert p_data["provenance_standard"] == "VanSetu Evidence-Aware Scientific Governance Specification v2.0"
+
+        # 3. Non-existent corridor returns 404
+        bad_passp = client.get("/api/evidence/passport/non_existent_corridor_999")
+        assert bad_passp.status_code == 404
+
